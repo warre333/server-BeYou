@@ -1,0 +1,24 @@
+app.js: Application entry point
+
+Files structure:
+    - /routes: Api routes
+        => example: /auth/login
+
+    - /config: all configs
+        => example: database configs
+
+    - /services: business logic
+        => example: The logic that is being fired when called on a route
+
+    - /middleware: 
+        => example: Check if user is authenticated (JWT checking), ...
+
+
+
+
+Database structure:
+    - tblUsers: user_id, username (unique), email (unique), password, bio, profile_image, verified, role (user/admin)
+    - tblPosts: post_id, user_id (to link with poster), media_link (Image, GIF, ...), caption (can be empty), ranking (for the trending algorithm)
+    - tblLikes: post_id (of liked post), liker (user_id from the liker)
+    - tblFollowers: user_id (person that is being followed), follower (user that followed)
+    - tblComments: post_id (post where is commented), user_id (commenter), comment (the text commented by the user on the post)

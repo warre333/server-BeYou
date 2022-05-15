@@ -1,0 +1,43 @@
+Usefull link:
+    - HTTP status codes: https://nl.wikipedia.org/wiki/Lijst_van_HTTP-statuscodes
+
+
+Other codes used in giving responses for own use (HTTP statuscodes go up to 599)
+    - e.g. profile review code (600+ => change when more is needed, keep in 6 if possible)
+        Reasons:
+        - 600: inappropate profile image -> warning
+        - 610: inappropate username -> warning
+        - 620: inappropate bio -> warning
+        - 630: banned (for x time, not removed)
+            Detailed reason:
+            - 631: inappropate profile image
+            - 632: inappropate username
+            - 633: inappropate bio
+            - 634: 3 warnings -> x days
+            - 635: 5+ warnings -> x days for every warning
+
+
+app.js: Application entry point
+
+Files structure:
+    - /routes: Api routes
+        => example: /auth/login
+
+    - /config: all configs
+        => example: database configs
+
+    - /services: business logic
+        => example: The logic that is being fired when called on a route
+
+    - /middleware: 
+        => example: Check if user is authenticated (JWT checking), ...
+
+
+
+
+Database structure:
+    - tblUsers: user_id, username (unique), email (unique), password, bio, profile_image, verified, role (user/admin), visible, visible_code (e.g. under review, ...)
+    - tblPosts: post_id, user_id (to link with poster), media_link (Image, GIF, ...), caption (can be empty), ranking (for the trending algorithm)
+    - tblLikes: post_id (of liked post), liker (user_id from the liker)
+    - tblFollowers: user_id (person that is being followed), follower (user that followed)
+    - tblComments: post_id (post where is commented), user_id (commenter), comment (the text commented by the user on the post)

@@ -62,9 +62,10 @@ router.get("/profile", (req, res) => {
 //  Review account:
 //      - Update page
 router.patch("/review", isAdmin, (req, res) => {
-    const sql = "UPDATE tblusers SET visible = ? WHERE user_id = ?"
+    //  visible_codes => Project_Info.txt
+    const sql = "UPDATE tblusers SET visible = ?, visible_code = ? WHERE user_id = ?"
 
-    db.query(sql, [req.query.visible, req.query.user], (err, result) => {
+    db.query(sql, [req.query.visible, req.query.visibleCode, req.query.user], (err, result) => {
         if(err){
             res.json({success: false, message: err})
         } else {
@@ -74,6 +75,17 @@ router.patch("/review", isAdmin, (req, res) => {
 })
 
 //      - Delete user
+router.delete("/user", isAdmin, (req, res) => {
+    const sql = "DELETE FROM tblusers WHERE user_id = ?"
+
+    db.query(sql, [user_id], (err, result) => {
+        if(err) {
+            res.json({success: false, message: err})
+        } else {
+            res.json({success: true, message: "The user has been deleted successfully."})
+        }
+    })
+})
 
 //  Blacklisting (?, maybe nice feature later):
 //      - Blacklist an email address

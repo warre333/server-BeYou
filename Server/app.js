@@ -6,15 +6,8 @@ const sha256 = require("js-sha256");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 
-const dbConfig = require("./config/database.config")
 
 const app = express();
-const db = mysql.createPool({
-  host: dbConfig.HOST,
-  user: dbConfig.USER,
-  password: dbConfig.PASSWORD,
-  database: dbConfig.DATABASE,
-});
   
 app.use(cors());
 app.use(express.json());

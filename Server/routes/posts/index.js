@@ -39,6 +39,7 @@ const nodemailer = require("nodemailer");
 var router = express.Router();
 
 const CheckJWT = require("../../middleware/auth/CheckJWT")
+const db = require("../../middleware/database/database.connection")
 
 router.get("/", (req,res) => {
     res.send("Choose the right API route within the posts section");	    

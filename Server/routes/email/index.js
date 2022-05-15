@@ -27,9 +27,49 @@ const nodemailer = require("nodemailer");
 var router = express.Router()
 
 const CheckJWT = require("../../middleware/auth/CheckJWT");
+const db = require("../../middleware/database/database.connection")
 
 router.get("/", (req,res) => {
     res.send("Choose the right API route within the email section");	    
 })
+
+// create reusable transporter object using gmail
+const transporter = nodemailer.createTransport({
+	host: "smtp.gmail.com",
+	auth: {
+		user: '', // Put in ENV & KEEP SAFE -> email
+		pass: '', // Put in ENV & KEEP SAFE -> password (can generate app password: https://myaccount.google.com/apppasswords)
+	},
+	port: 465,
+	secure: true, // true for 465, false for other ports
+	tls: {
+		rejectUnauthorized: false // For Testing
+	}
+});
+
+// Send Email Template: nodemailer
+async function email(emailToSendTo) {
+    // send mail with transport object
+	await transporter.sendMail(
+        {
+			from: 'Sender Name', // sender name
+			to: emailToSendTo, // list of receivers
+			subject: "Subject From The Email", // Subject line
+			html: 
+				"<strong>A HTML body that's being send</strong>", // html body
+		}, 
+		function (err, info) {
+			if(err){
+				console.log(err)
+			} else {
+				if(info.accepted[0] == emailToSendTo){ // Works if it's send to 1 person
+					// Action to do after it's send
+                    //  => e.g. put something in db
+				} 
+			}
+		}
+	);
+}
+
 
 module.exports = router;

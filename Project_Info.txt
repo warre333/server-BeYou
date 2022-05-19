@@ -38,6 +38,7 @@ Files structure:
 Database structure:
     - tblUsers: user_id, username (unique), email (unique), password, bio, profile_image, verified, role (user/admin), visible, visible_code (e.g. under review, ...)
     - tblPosts: post_id, user_id (to link with poster), media_link (Image, GIF, ...), caption (can be empty), ranking (for the trending algorithm)
+    - tblViewed: post_id (viewed video), user_id (viewer), view_date (date viewed, delete row after +-30 days)
     - tblLikes: post_id (of liked post), liker (user_id from the liker)
     - tblFollowers: user_id (person that is being followed), follower (user that followed)
     - tblComments: post_id (post where is commented), user_id (commenter), comment (the text commented by the user on the post)

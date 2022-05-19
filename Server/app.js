@@ -26,6 +26,9 @@ app.use("/posts", posts);
 app.use("/users", users);
 
 
+// Algorithms
+const trending_algorithm = require("./services/trending_algorithm/index")
+
 // Start server
 app.listen(4000, () => {
  	console.log("API has been started on port 4000!");

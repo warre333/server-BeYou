@@ -52,6 +52,57 @@ router.get("/profile", (req, res) => {
     }
 })
 
+// Get total followers
+router.get("/followers", (req, res) => {    
+    const user_id = req.query.user_id
+
+    if(user_id){
+        db.query("SELECT count(*) AS totalFollowers FROM tblfollowers WHERE user_id = ?", [user_id], (err, result) => {
+            if(err){
+                res.json({success: false, message: err})
+            } else {
+                res.json({success: true, data: result[0].totalFollowers})
+            }
+        })
+    } else {        
+        res.json({success: false, message: "Provide an user id to get the followers from"})
+    }    
+})
+
+// Get total posts
+router.get("/posts", (req, res) => {    
+    const user_id = req.query.user_id
+
+    if(user_id){
+        db.query("SELECT count(*) AS totalPosts FROM tblposts WHERE user_id = ?", [user_id], (err, result) => {
+            if(err){
+                res.json({success: false, message: err})
+            } else {
+                res.json({success: true, data: result[0].totalPosts})
+            }
+        })
+    } else {        
+        res.json({success: false, message: "Provide an user id to get the posts from"})
+    }    
+})
+
+// Get total likes
+router.get("/likes", (req, res) => {    
+    const user_id = req.query.user_id
+
+    if(user_id){
+        db.query("SELECT count(*) AS totalLikes FROM tbllikes WHERE user_id = ?", [user_id], (err, result) => {
+            if(err){
+                res.json({success: false, message: err})
+            } else {
+                res.json({success: true, data: result[0].totalLikes})
+            }
+        })
+    } else {        
+        res.json({success: false, message: "Provide an user id to get the likes from"})
+    }    
+})
+
 
 /*
 

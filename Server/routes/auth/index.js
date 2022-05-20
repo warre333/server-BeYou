@@ -62,13 +62,13 @@ router.post("/register", async(req, res) => {
 
 // Login
 router.post("/login", (req, res) => {
-    const email = req.body.email;
+    const username = "@" + req.body.username;
     const password = sha256(req.body.password + authConfig.SALT);
 
-    if (email && password) {
-        const sql = "SELECT * FROM tblusers WHERE email = ? and password = ?";
+    if (username && password) {
+        const sql = "SELECT * FROM tblusers WHERE username = ? and password = ?";
   
-        db.query(sql, [email, password], (err, result) => {
+        db.query(sql, [username, password], (err, result) => {
             if (err) {
                 res.send(err);
             } else {

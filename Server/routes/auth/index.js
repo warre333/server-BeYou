@@ -19,7 +19,7 @@ router.get("/", CheckJWT, (req,res) => {
 
 // Register
 router.post("/register", async(req, res) => {
-    const username = req.body.username;
+    const username = "@" + req.body.username;
     const email = req.body.email;
     const password = sha256(req.body.password + authConfig.SALT);
   
@@ -83,7 +83,7 @@ router.post("/login", (req, res) => {
                     
                     res.json({auth: true, token: token});
                 } else {
-                    res.json({auth: false, message: "user or password is wrong."});
+                    res.json({auth: false, message: "The username or password is wrong."});
                 }
             }
         });

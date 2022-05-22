@@ -14,6 +14,7 @@ const CheckJWT = require("../../middleware/auth/CheckJWT")
 const db = require("../../middleware/database/database.connection");
 const verifyJWT = require("../../middleware/auth/CheckJWT");
 const isAdmin = require("../../middleware/auth/IsAdmin");
+const { JWTSECRET } = require("../../config/auth.config");
 
 router.get("/", (req,res) => {
     res.send("Choose the right API route within the posts section");	    
@@ -26,10 +27,8 @@ router.get("/", (req,res) => {
 */
 
 // Get posts to show (feed)
-router.get("/feed", /* CheckJWT, */ (req,res) => {
-    
-    // const user_id = req.user_id // With JWT
-    const user_id = req.query.user_id // From request for testing
+router.get("/feed", CheckJWT, (req,res) => {
+    const user_id = req.user_id
 
     if(user_id){
         // Explanation query: selects all posts from the people you're following
@@ -40,9 +39,7 @@ router.get("/feed", /* CheckJWT, */ (req,res) => {
             if(err){
                 res.json({success: false, message: err})
             } else {
-                console.log(sql, [user_id])
                 // result[placeinarray].post_id
-                console.log(result) 
                 res.json({success: true, data: result})
             }
         })   
@@ -54,10 +51,19 @@ router.get("/feed", /* CheckJWT, */ (req,res) => {
 
 
 // Get posts to show (trending)
-router.get("/trending", /* CheckJWT, */ (req,res) => {
+router.get("/trending", (req,res) => {
+    const token = req.headers["x-access-token"];
+    
+    if(token) {
+        jwt.verify(token, JWTSECRET, (err, decoded) => {
+            if(decoded){
+                req.user_id = decoded.user_id;
+                req.role = decoded.role;
+            }
+        })
+    } 
 
-    // const user_id = req.user_id // With JWT
-    const user_id = req.query.user_id // From request for testing
+    const user_id = req.user_id
 
     if(user_id){
         // Explanation query: select all posts where post_id's are the same and where the user_id is not found (= not seen)
@@ -68,14 +74,23 @@ router.get("/trending", /* CheckJWT, */ (req,res) => {
             if(err){
                 res.json({success: false, message: err})
             } else {
-                console.log(sql, [user_id])
                 // result[placeinarray].post_id
-                console.log(result) 
                 res.json({success: true, data: result})
             }
         })   
     } else {
-        res.json({success: false, message: "Log in."})
+        // Explanation query: select all posts with the highest rankings, not saving if viewed because user is not logged in YET
+        // Add Limit
+        const sql = "SELECT * FROM tblposts ORDER BY ranking DESC"
+
+        db.query(sql, [user_id], (err, result) => {
+            if(err){
+                res.json({success: false, message: err})
+            } else {
+                // result[placeinarray].post_id
+                res.json({success: true, data: result})
+            }
+        })   
     }
 })
 
@@ -235,7 +250,7 @@ router.get("/posts", (req, res) => {
 })
 
 // Viewed post
-router.post("/view", /* CheckJWT, */ (req, res) => {
+router.post("/view", CheckJWT, (req, res) => {
     // const user_id = req.user_id
     const user_id = req.query.user_id // Change to req.user_id with JWT
     const post_id = req.body.post_id
@@ -254,7 +269,7 @@ router.post("/view", /* CheckJWT, */ (req, res) => {
 })
 
 // Liked post
-router.post("/like", /* CheckJWT, */ (req, res) => {
+router.post("/like", CheckJWT, (req, res) => {
     // const user_id = req.user_id
     const user_id = req.query.user_id // Change to req.user_id with JWT
     const post_id = req.body.post_id
@@ -273,7 +288,7 @@ router.post("/like", /* CheckJWT, */ (req, res) => {
 })
 
 // Unliked post
-router.delete("/like", /* CheckJWT, */ (req, res) => {
+router.delete("/like", CheckJWT, (req, res) => {
     // const user_id = req.user_id
     const user_id = req.query.user_id // Change to req.user_id with JWT
     const post_id = req.body.post_id
@@ -292,7 +307,7 @@ router.delete("/like", /* CheckJWT, */ (req, res) => {
 })
 
 // Comment post
-router.post("/comment", /* CheckJWT, */ (req, res) => {
+router.post("/comment", CheckJWT, (req, res) => {
     // const user_id = req.user_id
     const user_id = req.query.user_id // Change to req.user_id with JWT
     const post_id = req.body.post_id
@@ -312,19 +327,26 @@ router.post("/comment", /* CheckJWT, */ (req, res) => {
 })
 
 // Delete comment
-router.delete("/comment", /* CheckJWT, */ (req, res) => {
+router.delete("/comment", CheckJWT, (req, res) => {
     // const user_id = req.user_id
     const user_id = req.query.user_id // Change to req.user_id with JWT
     const comment_id = req.query.comment_id
 
     if(comment){
-        db.query("DELETE FROM tblcomments WHERE comment_id = ?", [comment_id], (err, result) => {
+        db.query("SELECT * FROM tblcomments WHERE comment_id = ? AND user_id = ?", [comment_id, user_id], (req, result) => {
             if(err){
                 res.json({success: false, message: err})
             } else {
-                res.json({success: true, message: "The comment has been deleted."})
+                db.query("DELETE FROM tblcomments WHERE comment_id = ?", [comment_id], (err, result) => {
+                    if(err){
+                        res.json({success: false, message: err})
+                    } else {
+                        res.json({success: true, message: "The comment has been deleted."})
+                    }
+                })
             }
         })
+        
     } else {
         res.json({success: false, message: "Provide a comment's id."})
     }

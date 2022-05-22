@@ -24,7 +24,7 @@ router.get("/", (req,res) => {
 
 */
 
-// Get profile page info from user (username, bio, profile image, total followers, total followed, posts)
+// Get profile page info from user by username (username, bio, profile image, total followers, total followed, posts)
 router.get("/profile", (req, res) => {
     const username = req.query.username
 
@@ -49,6 +49,29 @@ router.get("/profile", (req, res) => {
         })
     } else {
         res.json({success: false, message: "No username was entered."})
+    }
+})
+
+// Get user's info by ID
+router.get("/user", (req, res) => {
+    const user_id = req.query.user_id
+
+    if(user_id){
+        const sql = "SELECT username, profile_image FROM tblusers WHERE user_id = ?"
+        
+        db.query(sql, [user_id], (err, resultUser) => {
+            if(err){
+                res.json({success: false, message: err})
+            } else {             
+                if(resultUser.length > 0) {
+                    res.json({success: true, data: resultUser[0]})
+                } else {
+                    res.json({success: false, message: "User was not found."})
+                }
+            }
+        })
+    } else {
+        res.json({success: false, message: "No user_id was entered."})
     }
 })
 

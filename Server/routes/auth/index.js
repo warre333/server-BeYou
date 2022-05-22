@@ -14,7 +14,7 @@ const authConfig = require("../../config/auth.config")
 
 // Check if user is authenticated
 router.get("/", CheckJWT, (req,res) => {
-    res.json({auth: true, userId: req.userId, role: req.role});	    
+    res.json({auth: true, user_id: req.user_id, role: req.role});	    
 })
 
 // Register
@@ -37,10 +37,10 @@ router.post("/register", async(req, res) => {
                         res.send(err);
                     } else {
                         if (result.length > 0) {
-                            const id = result[0].user_id
+                            const user_id = result[0].user_id
                             const role = result[0].role
                             const data = { 
-                                id, 
+                                user_id, 
                                 role 
                             }
                             const token = jwt.sign(data, authConfig.JWTSECRET, { expiresIn: 7200 })
@@ -73,10 +73,11 @@ router.post("/login", (req, res) => {
                 res.send(err);
             } else {
                 if (result.length > 0) {
-                    const id = result[0].user_id
+                    const user_id = result[0].user_id
                     const role = result[0].role
+                    
                     const data = { 
-                        id, 
+                        user_id, 
                         role 
                     }
                     const token = jwt.sign(data, authConfig.JWTSECRET, { expiresIn: 7200 })

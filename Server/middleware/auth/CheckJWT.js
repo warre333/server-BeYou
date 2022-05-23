@@ -10,8 +10,8 @@ const authConfig = require("../../config/auth.config")
 
 // Verify JWT => Json Web Token / Cookies
 const verifyJWT = (req, res, next) => {
-    const token = req.headers["x-access-token"]; 
-    
+    const token = req.headers["x-access-token"];
+
     if(!token) {
         res.send("No token was found")
     } else {

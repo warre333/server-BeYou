@@ -270,12 +270,11 @@ router.post("/view", CheckJWT, (req, res) => {
 
 // Liked post
 router.post("/like", CheckJWT, (req, res) => {
-    // const user_id = req.user_id
-    const user_id = req.query.user_id // Change to req.user_id with JWT
+    const user_id = req.user_id
     const post_id = req.body.post_id
 
     if(post_id){
-        db.query("INSERT INTO tbllikess(post_id, liker) VALUES(?,?)", [post_id, user_id], (err, result) => {
+        db.query("INSERT INTO tbllikes(post_id, liker) VALUES(?,?)", [post_id, user_id], (err, result) => {
             if(err){
                 res.json({success: false, message: err})
             } else {
@@ -289,12 +288,11 @@ router.post("/like", CheckJWT, (req, res) => {
 
 // Unliked post
 router.delete("/like", CheckJWT, (req, res) => {
-    // const user_id = req.user_id
-    const user_id = req.query.user_id // Change to req.user_id with JWT
-    const post_id = req.body.post_id
+    const user_id = req.user_id
+    const post_id = req.query.post_id
 
     if(post_id){
-        db.query("DELETE FROM tbllikes WHERE post_id = ? AND user_id = ?", [post_id, user_id], (err, result) => {
+        db.query("DELETE FROM tbllikes WHERE post_id = ? AND liker = ?", [post_id, user_id], (err, result) => {
             if(err){
                 res.json({success: false, message: err})
             } else {
@@ -308,8 +306,7 @@ router.delete("/like", CheckJWT, (req, res) => {
 
 // Comment post
 router.post("/comment", CheckJWT, (req, res) => {
-    // const user_id = req.user_id
-    const user_id = req.query.user_id // Change to req.user_id with JWT
+    const user_id = req.user_id
     const post_id = req.body.post_id
     const comment = req.body.comment
 

@@ -33,9 +33,9 @@ router.get("/feed", CheckJWT, (req,res) => {
     if(user_id){
         // Explanation query: selects all posts from the people you're following
         // Add Limit
-        const sql = "SELECT * FROM tblposts WHERE tblposts.user_id = (SELECT user_id FROM tblfollowers as following WHERE follower = 2) AND NOT EXISTS (SELECT * FROM tblviewed WHERE user_id = ? AND tblviewed.post_id = tblposts.post_id) ORDER BY RAND()"
+        const sql = "SELECT * FROM tblposts WHERE tblposts.user_id IN (SELECT user_id AS following FROM tblfollowers WHERE follower = ?) AND NOT EXISTS (SELECT * FROM tblviewed WHERE user_id = ? AND tblviewed.post_id = tblposts.post_id) ORDER BY RAND()"
 
-        db.query(sql, [user_id, user_id], (err, result) => {
+        db.query(sql, [user_id, user_id, user_id], (err, result) => {
             if(err){
                 res.json({success: false, message: err})
             } else {
@@ -275,6 +275,24 @@ router.post("/like", CheckJWT, (req, res) => {
 
     if(post_id){
         db.query("INSERT INTO tbllikes(post_id, liker) VALUES(?,?)", [post_id, user_id], (err, result) => {
+            if(err){
+                res.json({success: false, message: err})
+            } else {
+                res.json({success: true})
+            }
+        })
+    } else {
+        res.json({success: false, message: "Provide a post id."})
+    }
+})
+
+// Get Liked post by id
+router.get("/like", CheckJWT, (req, res) => {
+    const user_id = req.user_id
+    const post_id = req.query.post_id
+
+    if(post_id){
+        db.query("SELECT * FROM tbllikes WHERE post_id = ? AND user_id = ?", [post_id, user_id], (err, result) => {
             if(err){
                 res.json({success: false, message: err})
             } else {

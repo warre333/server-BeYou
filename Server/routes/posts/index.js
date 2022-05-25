@@ -292,11 +292,15 @@ router.get("/like", CheckJWT, (req, res) => {
     const post_id = req.query.post_id
 
     if(post_id){
-        db.query("SELECT * FROM tbllikes WHERE post_id = ? AND user_id = ?", [post_id, user_id], (err, result) => {
+        db.query("SELECT * FROM tbllikes WHERE post_id = ? AND liker = ?", [post_id, user_id], (err, result) => {
             if(err){
                 res.json({success: false, message: err})
             } else {
-                res.json({success: true})
+                if(result.length > 0){
+                    res.json({success: true, liked: true})
+                } else {
+                    res.json({success: true, liked: false})
+                }                
             }
         })
     } else {
@@ -322,6 +326,24 @@ router.delete("/like", CheckJWT, (req, res) => {
     }
 })
 
+// Get All Comments
+router.get("/comments", CheckJWT, (req, res) => {
+    const user_id = req.user_id
+    const post_id = req.query.post_id
+    
+    if(post_id){
+        db.query("SELECT comment_id, comment, post_id, tblcomments.user_id, username, profile_image FROM tblcomments, tblusers WHERE post_id = ? AND tblusers.user_id = tblcomments.user_id ORDER BY comment_id DESC LIMIT 10", [post_id], (err, result) => {
+            if(err){
+                res.json({success: false, message: err})
+            } else {
+                res.json({success: true, data: result})
+            }
+        })
+    } else {
+        res.json({success: false, message: "Provide a post id."})
+    }
+})
+
 // Comment post
 router.post("/comment", CheckJWT, (req, res) => {
     const user_id = req.user_id
@@ -329,11 +351,11 @@ router.post("/comment", CheckJWT, (req, res) => {
     const comment = req.body.comment
 
     if(post_id && comment){
-        db.query("INSERT INTO tbllikess(post_id, user_id, comment) VALUES(?,?,?)", [post_id, user_id, comment], (err, result) => {
+        db.query("INSERT INTO tblcomments(post_id, user_id, comment) VALUES(?,?,?)", [post_id, user_id, comment], (err, result) => {
             if(err){
                 res.json({success: false, message: err})
             } else {
-                res.json({success: true})
+                res.json({success: true, comment_id: result.insertId})
             }
         })
     } else {

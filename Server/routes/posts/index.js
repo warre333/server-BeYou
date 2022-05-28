@@ -365,22 +365,26 @@ router.post("/comment", CheckJWT, (req, res) => {
 
 // Delete comment
 router.delete("/comment", CheckJWT, (req, res) => {
-    // const user_id = req.user_id
-    const user_id = req.query.user_id // Change to req.user_id with JWT
+    const user_id = req.user_id
     const comment_id = req.query.comment_id
 
-    if(comment){
-        db.query("SELECT * FROM tblcomments WHERE comment_id = ? AND user_id = ?", [comment_id, user_id], (req, result) => {
+    if(comment_id){
+        db.query("SELECT * FROM tblcomments WHERE comment_id = ? AND user_id = ?", [comment_id, user_id], (err, result) => {
             if(err){
                 res.json({success: false, message: err})
             } else {
-                db.query("DELETE FROM tblcomments WHERE comment_id = ?", [comment_id], (err, result) => {
-                    if(err){
-                        res.json({success: false, message: err})
-                    } else {
-                        res.json({success: true, message: "The comment has been deleted."})
-                    }
-                })
+                console.log(req.query)
+                if(result.length > 0){
+                    db.query("DELETE FROM tblcomments WHERE comment_id = ?", [comment_id], (err, result) => {
+                        if(err){
+                            res.json({success: false, message: err})
+                        } else {
+                            res.json({success: true, message: "The comment has been deleted."})
+                        }
+                    })
+                } else {
+                    res.json({success: false, message: "The commented you tried to delete is not yours./"})
+                }                
             }
         })
         

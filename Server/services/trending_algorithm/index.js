@@ -70,9 +70,11 @@ async function changePostRanking(post_id){
 // Loop over all the posts
 function changeAllPostRanking(){
     db.query("SELECT count(*) AS totalPosts FROM tblposts", (err, result) => {
-        for(let i = 1; i <= result[0].totalPosts; i++){
-            changePostRanking(i)
-        }
+        if(result[0].totalPosts > 0){
+            for(let i = 1; i <= result[0].totalPosts; i++){
+                changePostRanking(i)
+            }
+        }        
     })
 }
 

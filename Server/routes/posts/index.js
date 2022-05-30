@@ -373,7 +373,6 @@ router.delete("/comment", CheckJWT, (req, res) => {
             if(err){
                 res.json({success: false, message: err})
             } else {
-                console.log(req.query)
                 if(result.length > 0){
                     db.query("DELETE FROM tblcomments WHERE comment_id = ?", [comment_id], (err, result) => {
                         if(err){

@@ -6,6 +6,8 @@ const cors = require("cors");
 const sha256 = require("js-sha256");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
+const multer = require("multer")
+const uuidv4 = require('uuid/v4');
 
 var router = express.Router();
 
@@ -13,6 +15,31 @@ const CheckJWT = require("../../middleware/auth/CheckJWT")
 const isAdmin = require("../../middleware/auth/IsAdmin")
 const db = require("../../middleware/database/database.connection");
 const verifyJWT = require("../../middleware/auth/CheckJWT");
+
+const DIR = '../../uploaded_images';
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, DIR);
+    },
+    filename: (req, file, cb) => {
+        const fileName = file.originalname.toLowerCase().split(' ').join('-');
+        cb(null, uuidv4() + '-' + fileName)
+    }
+});
+
+var upload = multer({
+    storage: storage,
+    fileFilter: (req, file, cb) => {        
+        console.log(req, file)
+        if (file.mimetype == "image/png" || file.mimetype == "image/jpg" || file.mimetype == "image/jpeg" || file.mimetype == "image/gif") {
+            cb(null, true);
+        } else {
+            cb(null, false);
+            return cb(new Error('Only .png, .jpg, .jpeg and gifs format allowed!'));
+        }
+    }
+});
+// const upload2 = multer({ dest: DIR })
 
 router.get("/", (req,res) => {
     res.send("Choose the right API route within the users section");	    
@@ -50,6 +77,17 @@ router.get("/profile", (req, res) => {
     } else {
         res.json({success: false, message: "No username was entered."})
     }
+})
+
+// Save new profile data
+router.patch("/profile",  (req, res) => {    
+    // upload.single("profileImage"),
+    const username = req.body.username
+    const bio = req.body.bio
+    console.log(req.file)
+    console.log("---------------")
+    console.log(req.body)
+    res.send("done")
 })
 
 // Get user's info by ID

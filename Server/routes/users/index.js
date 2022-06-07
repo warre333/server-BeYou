@@ -27,7 +27,7 @@ const storage = multer.diskStorage({
     }
 });
 
-var upload = multer({
+var upload2 = multer({
     storage: storage,
     fileFilter: (req, file, cb) => {        
         console.log(req, file)
@@ -39,6 +39,7 @@ var upload = multer({
         }
     }
 });
+const upload = multer({ dest: "../../uploaded_images" });
 // const upload2 = multer({ dest: DIR })
 
 router.get("/", (req,res) => {
@@ -80,13 +81,13 @@ router.get("/profile", (req, res) => {
 })
 
 // Save new profile data
-router.patch("/profile",  (req, res) => {    
+router.patch("/profile", upload.single("profileImage"), (req, res) => {    
     // upload.single("profileImage"),
     const username = req.body.username
     const bio = req.body.bio
-    console.log(req.file)
+    console.log(req.files)
     console.log("---------------")
-    console.log(req.body)
+    // console.log(req)
     res.send("done")
 })
 

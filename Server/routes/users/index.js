@@ -39,7 +39,7 @@ var upload2 = multer({
         }
     }
 });
-const upload = multer({ dest: "../../uploaded_images" });
+const upload = multer({ dest: "./../uploaded_images" });
 // const upload2 = multer({ dest: DIR })
 
 router.get("/", (req,res) => {

@@ -68,7 +68,7 @@ router.get("/trending", (req,res) => {
     if(user_id){
         // Explanation query: select all posts where post_id's are the same and where the user_id is not found (= not seen)
         // Add Limit
-        const sql = "SELECT * FROM tblposts WHERE NOT EXISTS (SELECT * FROM tblviewed WHERE user_id = ?) ORDER BY ranking DESC"
+        const sql = "SELECT * FROM tblposts WHERE NOT EXISTS (SELECT * FROM tblviewed WHERE user_id = ? AND tblviewed.post_id = tblposts.post_id) ORDER BY ranking DESC"
 
         db.query(sql, [user_id], (err, result) => {
             if(err){
@@ -251,18 +251,28 @@ router.get("/posts", (req, res) => {
 
 // Viewed post
 router.post("/view", CheckJWT, (req, res) => {
-    // const user_id = req.user_id
-    const user_id = req.query.user_id // Change to req.user_id with JWT
+    const user_id = req.user_id
     const post_id = req.body.post_id
 
     if(post_id){
-        db.query("INSERT INTO tblviewed(user_id, post_id) VALUES(?,?)", [user_id, post_id], (err, result) => {
+        db.query("SELECT count(*) AS isViewed FROM tblviewed WHERE post_id = ? AND user_id = ?", [post_id, user_id], (err, result) => {
             if(err){
                 res.json({success: false, message: err})
             } else {
-                res.json({success: true})
+                if(result[0].isViewed == 0){
+                    db.query("INSERT INTO tblviewed(user_id, post_id) VALUES(?,?)", [user_id, post_id], (err, result) => {
+                        if(err){
+                            res.json({success: false, message: err})
+                        } else {
+                            res.json({success: true})
+                        }
+                    })
+                } else {
+                    res.json({success: false, message: "Already viewed"})
+                }
             }
         })
+        
     } else {
         res.json({success: false, message: "Provide a post id."})
     }
@@ -373,7 +383,6 @@ router.delete("/comment", CheckJWT, (req, res) => {
             if(err){
                 res.json({success: false, message: err})
             } else {
-                console.log(req.query)
                 if(result.length > 0){
                     db.query("DELETE FROM tblcomments WHERE comment_id = ?", [comment_id], (err, result) => {
                         if(err){

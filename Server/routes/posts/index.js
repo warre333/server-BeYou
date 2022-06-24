@@ -7,6 +7,8 @@ const cors = require("cors");
 const sha256 = require("js-sha256");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
+var formidable = require('formidable');
+var fs = require('fs');
 
 var router = express.Router();
 
@@ -115,11 +117,19 @@ router.get("/post", (req, res) => {
 })
 
 //  -> Post
-router.post("/post", /*verifyJWT,*/ (req, res) => {
-    // const user_id = req.user_id
-    const user_id = req.body.user_id // Change to req.user_id with JWT
+router.post("/post", verifyJWT, (req, res) => {
+    const user_id = req.user_id
     const media_link = req.body.media_link
     const caption = req.body.caption
+    
+    var form = new formidable.IncomingForm();
+    form.parse(req, function (err, fields, files) {
+        if(err){
+            console.log(err)
+        } else {
+            console.log(fields, files)
+        }
+    });
 
     if(media_link){
         const sql = "INSERT INTO tblposts(user_id, media_link, caption) VALUES(?,?,?)"

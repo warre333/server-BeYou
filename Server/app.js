@@ -5,14 +5,12 @@ const cors = require("cors");
 const sha256 = require("js-sha256");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
-const fileUpload = require('express-fileupload');
 
 
 const app = express();
   
 app.use(cors());
 app.use(express.json());
-app.use(fileUpload())
 app.use(bodyParser.urlencoded({ extended: true }));  
 
 // Import the routes

@@ -1,0 +1,12 @@
+:root {
+    --post: #f5f5f5;
+}
+
+.bg-light {
+    background-color: var(--post)!important;
+}
+
+.bg-image-post {
+    background: rgb(69,69,69);
+    background: radial-gradient(circle, rgba(69,69,69,1) 0%, rgba(20,20,20,1) 80%);
+}

@@ -34,47 +34,52 @@ async function changePostRanking(post_id){
     let likes = 0;
     let daysSincePost = 0;
 
-    db.query("SELECT count(*) AS totalComments FROM tblcomments WHERE post_id = ?", [post_id], (err, result) => {
+
+    db.query("SELECT * FROM tblposts WHERE post_id = ?", [post_id], (err, result) => {
         if(err){
             console.log(err)
         } else {
-            comments = result[0].totalComments
+            if(result.length > 0){
+                const time_placed = result[0].time_placed
 
-            db.query("SELECT count(*) AS totalLikes FROM tblLikes WHERE post_id = ?", [post_id], (err, result) => {
-                if(err){
-                    console.log(err)
-                } else {
-                    likes = result[0].totalLikes
+                db.query("SELECT count(*) AS totalComments FROM tblcomments WHERE post_id = ?", [post_id], (err, result) => {
+                    if(err){
+                        console.log(err)
+                    } else {
+                        comments = result[0].totalComments
 
-                    db.query("SELECT time_placed FROM tblposts WHERE post_id = ?", [post_id], (err, result) => {
-                        if(err){
-                            console.log(err)
-                        } else {
-                            daysSincePost = calculateDaysSincePost(result[0].time_placed)
+                        db.query("SELECT count(*) AS totalLikes FROM tblLikes WHERE post_id = ?", [post_id], (err, result) => {
+                            if(err){
+                                console.log(err)
+                            } else {
+                                likes = result[0].totalLikes
+                                daysSincePost = calculateDaysSincePost(time_placed)
 
-                            const newRanking = calculateRanking(comments, likes, daysSincePost)
-
-                            db.query("UPDATE tblposts SET ranking = ? WHERE post_id = ?", [newRanking, post_id], (err, result) => {
-                                if(err){
-                                    console.log(err)
-                                } 
-                            })
-                        }
-                    })
-                }
-            })
+                                const newRanking = calculateRanking(comments, likes, daysSincePost)
+    
+                                db.query("UPDATE tblposts SET ranking = ? WHERE post_id = ?", [newRanking, post_id], (err, result) => {
+                                    if(err){
+                                        console.log(err)
+                                    } 
+                                })
+                            }
+                        })
+                    }
+                })                
+            }                        
         }
     })
 }
 
 // Loop over all the posts
 function changeAllPostRanking(){
-    db.query("SELECT count(*) AS totalPosts FROM tblposts", (err, result) => {
-        if(result[0].totalPosts > 0){
-            for(let i = 1; i <= result[0].totalPosts; i++){
+    db.query("SELECT * FROM tblposts ORDER BY post_id DESC", (err, result) => {
+        if(result?.length > 0){
+            for(let i = 1; i <= result[0].post_id; i++){
                 changePostRanking(i)
             }
-        }        
+        }
+        
     })
 }
 

@@ -7,7 +7,6 @@ const sha256 = require("js-sha256");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const multer = require("multer")
-const uuidv4 = require('uuid/v4');
 
 var router = express.Router();
 
@@ -16,31 +15,35 @@ const isAdmin = require("../../middleware/auth/IsAdmin")
 const db = require("../../middleware/database/database.connection");
 const verifyJWT = require("../../middleware/auth/CheckJWT");
 
-const DIR = '../../uploaded_images';
+// Uploading images to backend
+// Define storage + filenames
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, DIR);
-    },
-    filename: (req, file, cb) => {
-        const fileName = file.originalname.toLowerCase().split(' ').join('-');
-        cb(null, uuidv4() + '-' + fileName)
+    destination: function(req, file, cb) {
+        cb(null, './uploads/profiles/');
+      },
+    filename: function(req, file, cb) {
+        const time = new Date().toISOString()
+        cb(null, time.substring(0, time.length - 14) + file.originalname);
     }
-});
+})
 
-var upload2 = multer({
-    storage: storage,
-    fileFilter: (req, file, cb) => {        
-        console.log(req, file)
-        if (file.mimetype == "image/png" || file.mimetype == "image/jpg" || file.mimetype == "image/jpeg" || file.mimetype == "image/gif") {
-            cb(null, true);
-        } else {
-            cb(null, false);
-            return cb(new Error('Only .png, .jpg, .jpeg and gifs format allowed!'));
-        }
-    }
+// Define image types
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png' || file.mimetype === 'image/jpg' || file.mimetype === 'image/gif') {
+    cb(null, true);
+  } else {
+    cb(null, false);
+  }
+};
+
+// Upload instance
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 1024 * 1024 * 5
+  },
+  fileFilter: fileFilter
 });
-const upload = multer({ dest: "./../uploaded_images" });
-// const upload2 = multer({ dest: DIR })
 
 router.get("/", (req,res) => {
     res.send("Choose the right API route within the users section");	    
@@ -81,7 +84,7 @@ router.get("/profile", (req, res) => {
 })
 
 // Save new profile data
-router.patch("/profile", upload.single("profileImage"), (req, res) => {    
+router.patch("/profile",  (req, res) => {    
     // upload.single("profileImage"),
     const username = req.body.username
     const bio = req.body.bio
@@ -89,6 +92,22 @@ router.patch("/profile", upload.single("profileImage"), (req, res) => {
     console.log("---------------")
     // console.log(req)
     res.send("done")
+})
+
+// Save new profile image
+router.patch("/profile-image", upload.single("profileImage"),  (req, res) => {   
+    db.query("UPDATE tblusers SET profile_image = ?", [req.file.filename], (err, result) => {
+        if(err){
+            res.json({success: false, message: err})
+        } else {
+            console.log(result)
+            if(result.affectedRows > 0){                
+                res.json({success: true, message: "The profile image was updated successfully"})
+            } else {                
+                res.json({success: false, message: "Profile image was not updates"})
+            }
+        }
+    })
 })
 
 // Get user's info by ID

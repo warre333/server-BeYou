@@ -12,6 +12,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));  
+app.use('/images', express.static('uploads'))
 
 // Import the routes
 const auth = require("./routes/auth/index")

@@ -7,9 +7,8 @@ const cors = require("cors");
 const sha256 = require("js-sha256");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
-var formidable = require('formidable');
-var fs = require('fs');
-
+const path = require("path")
+var multer = require('multer');
 var router = express.Router();
 
 const CheckJWT = require("../../middleware/auth/CheckJWT")
@@ -17,6 +16,37 @@ const db = require("../../middleware/database/database.connection");
 const verifyJWT = require("../../middleware/auth/CheckJWT");
 const isAdmin = require("../../middleware/auth/IsAdmin");
 const { JWTSECRET } = require("../../config/auth.config");
+const { API_URL } = require("../../config/api.config");
+
+// Uploading images to backend
+// Define storage + filenames
+const storage = multer.diskStorage({
+    destination: function(req, file, cb) {
+        cb(null, './uploads/posts/');
+      },
+    filename: function(req, file, cb) {
+        const time = new Date().toISOString()
+        cb(null, time.substring(0, time.length - 14) + file.originalname);
+    }
+})
+
+// Define image types
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png' || file.mimetype === 'image/jpg' || file.mimetype === 'image/gif') {
+    cb(null, true);
+  } else {
+    cb(null, false);
+  }
+};
+
+// Upload instance
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 1024 * 1024 * 5
+  },
+  fileFilter: fileFilter
+});
 
 router.get("/", (req,res) => {
     res.send("Choose the right API route within the posts section");	    
@@ -108,7 +138,12 @@ router.get("/post", (req, res) => {
             if(err){
                 res.json({success: false, message: err})
             } else {
-                res.json({success: true, data: result[0]})
+                res.json(
+                    {
+                        success: true, 
+                        data: result[0],
+                    }
+                )
             }
         })
     } else {
@@ -117,19 +152,11 @@ router.get("/post", (req, res) => {
 })
 
 //  -> Post
-router.post("/post", verifyJWT, (req, res) => {
+router.post("/post",  verifyJWT,  upload.single('postImage'), (req, res) => {
     const user_id = req.user_id
-    const media_link = req.body.media_link
+    // const user_id = req.query.user_id
+    const media_link = req.file.filename
     const caption = req.body.caption
-    
-    var form = new formidable.IncomingForm();
-    form.parse(req, function (err, fields, files) {
-        if(err){
-            console.log(err)
-        } else {
-            console.log(fields, files)
-        }
-    });
 
     if(media_link){
         const sql = "INSERT INTO tblposts(user_id, media_link, caption) VALUES(?,?,?)"

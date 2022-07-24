@@ -14,7 +14,7 @@ const authConfig = require("../../config/auth.config")
 
 // Check if user is authenticated
 router.get("/", CheckJWT, (req,res) => {
-    res.json({auth: true, user_id: req.user_id, role: req.role});	    
+    res.json({success: true, user_id: req.user_id, role: req.role});	    
 })
 
 // Register
@@ -45,9 +45,9 @@ router.post("/register", async(req, res) => {
                             }
                             const token = jwt.sign(data, authConfig.JWTSECRET, { expiresIn: 7200 })
                             
-                            res.json({auth: true, token: token});
+                            res.json({success: true, token: token});
                         } else {
-                            res.json({auth: false, message: "An unkown error has occurred."});
+                            res.json({success: false, message: "An unkown error has occurred."});
                         }
                     }
                 });
@@ -55,7 +55,7 @@ router.post("/register", async(req, res) => {
             }
         });
     } else {
-        res.json({auth: false, message: "All the fields should be filled in."})
+        res.json({success: false, message: "All the fields should be filled in."})
     }
 });
 
@@ -64,7 +64,7 @@ router.post("/register", async(req, res) => {
 router.post("/login", (req, res) => {
     const username = "@" + req.body.username;
     const password = sha256(req.body.password + authConfig.SALT);
-
+    console.log(password)    
     if (username && password) {
         const sql = "SELECT * FROM tblusers WHERE username = ? and password = ?";
   
@@ -82,15 +82,15 @@ router.post("/login", (req, res) => {
                     }
                     const token = jwt.sign(data, authConfig.JWTSECRET, { expiresIn: 7200 })
                     
-                    res.json({auth: true, token: token});
+                    res.json({success: true, token: token});
                 } else {
-                    res.json({auth: false, message: "The username or password is wrong."});
+                    res.json({success: false, message: "The username or password is wrong."});
                 }
             }
         });
 
     } else {
-        res.json({auth: false, message: "Enter username and password!"});
+        res.json({success: false, message: "Enter username and password!"});
     }
 });
 

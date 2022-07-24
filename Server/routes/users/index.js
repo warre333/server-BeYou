@@ -6,7 +6,7 @@ const cors = require("cors");
 const sha256 = require("js-sha256");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
-const multer = require("multer")
+var multer = require('multer');
 
 var router = express.Router();
 
@@ -22,14 +22,14 @@ const storage = multer.diskStorage({
         cb(null, './uploads/profiles/');
       },
     filename: function(req, file, cb) {
-        const time = new Date().toISOString()
-        cb(null, time.substring(0, time.length - 14) + file.originalname);
+        const time = new Date().getTime()
+        cb(null, sha256(time + file.originalname) + "." + (file.originalname.split('.')[file.originalname.split('.').length -1]).toLowerCase()); // This generates a hash with the timestamp and original name with the original extension
     }
 })
 
 // Define image types
 const fileFilter = (req, file, cb) => {
-  if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png' || file.mimetype === 'image/jpg' || file.mimetype === 'image/gif') {
+  if (file.mimetype === 'image/png' || file.mimetype === 'image/jpg' || file.mimetype === 'image/gif' || file.mimetype === 'image/jpeg' || file.originalname.split('.')[file.originalname.split('.').length -1] == "rbxl" || file.originalname.split('.')[file.originalname.split('.').length -1] == "rbxs"  || file.originalname.split('.')[file.originalname.split('.').length -1] == "rbxm" || file.originalname.split('.')[file.originalname.split('.').length -1] == "rbxlx") {
     cb(null, true);
   } else {
     cb(null, false);
@@ -40,7 +40,7 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 1024 * 1024 * 5
+    fileSize: 1024 * 1024 * 10
   },
   fileFilter: fileFilter
 });
@@ -62,20 +62,48 @@ router.get("/profile", (req, res) => {
     if(username){
         const sql = "SELECT user_id, username, bio, profile_image, verified FROM tblusers WHERE username = ?"
         
-        db.query(sql, [username], (err, resultUser) => {
+        db.query(sql, [username], (err, user_info) => {
             if(err){
                 res.json({success: false, message: "User was not found."})
             } else {
-                const userInfo = resultUser[0]
-                const sql = "SELECT * FROM tblposts WHERE user_id = ?"
+                if(user_info.length > 0){
+                    const userInfo = user_info[0]
+                    const sql = "SELECT * FROM tblposts WHERE user_id = ?"
 
-                db.query(sql, [userInfo.user_id], (err, posts) => {
-                    if(err){
-                        res.json({success: false, message: err})
-                    } else {
-                        res.json({success: true, data: {userInfo, posts}})
-                    }
-                })
+                    db.query(sql, [userInfo.user_id], (err, posts) => {
+                        if(err){
+                            res.json({success: false, message: err})
+                        } else {
+                            const sql = "SELECT count(*) AS totalFollowers FROM tblfollowers WHERE user_id = ?"
+
+                            db.query(sql, [userInfo.user_id], (err, followers) => {
+                                if(err){
+                                    res.json({success: false, message: err})
+                                } else {
+                                    const sql = "SELECT count(*) AS totalPosts FROM tblposts WHERE user_id = ?"
+
+                                    db.query(sql, [userInfo.user_id], (err, total_posts) => {
+                                        if(err){
+                                            res.json({success: false, message: err})
+                                        } else {                                    
+                                            const sql = "SELECT count(*) AS totalLikes FROM tbllikes LEFT JOIN tblposts ON (tblposts.post_id = tbllikes.post_id)  WHERE tblposts.user_id = ?"
+
+                                            db.query(sql, [userInfo.user_id], (err, likes) => {
+                                                if(err){
+                                                    res.json({success: false, message: err})
+                                                } else {
+                                                    res.json({success: true, data: {user_info, posts, total_followers: followers[0].totalFollowers, total_posts: total_posts[0].totalPosts, total_likes: likes[0].totalLikes}})
+                                                }
+                                            })
+                                        }
+                                    })
+                                }
+                            })                         
+                        }
+                    })
+                } else {                    
+                    res.json({success: false, message: "User was not found."})
+                }
             }
         })
     } else {
@@ -84,30 +112,44 @@ router.get("/profile", (req, res) => {
 })
 
 // Save new profile data
-router.patch("/profile",  (req, res) => {    
-    // upload.single("profileImage"),
+router.patch("/profile", CheckJWT, (req, res) => {
     const username = req.body.username
     const bio = req.body.bio
-    console.log(req.files)
-    console.log("---------------")
-    // console.log(req)
-    res.send("done")
+    
+    if(username){
+        db.query("UPDATE tblusers SET username = ?, bio = ? WHERE user_id = ?", [username, bio, req.user_id], (err, result) => {
+            if(err){
+                res.json({success: false, message: err})
+            } else {
+                if(result.affectedRows > 0){
+                    res.json({success: true, message: "The profile was updated successfully"})
+                } else {
+                    res.json({success: false, message: "Profile was not updated"})
+                }
+            }
+        })
+    } else {
+        res.json({success: false, message: "Username should be provided."})
+    }
 })
 
 // Save new profile image
-router.patch("/profile-image", upload.single("profileImage"),  (req, res) => {   
-    db.query("UPDATE tblusers SET profile_image = ?", [req.file.filename], (err, result) => {
-        if(err){
-            res.json({success: false, message: err})
-        } else {
-            console.log(result)
-            if(result.affectedRows > 0){                
-                res.json({success: true, message: "The profile image was updated successfully"})
-            } else {                
-                res.json({success: false, message: "Profile image was not updates"})
+router.patch("/profile-image", CheckJWT, upload.single("profileImage"),  (req, res) => {   
+    if(req?.file?.filename){
+        db.query("UPDATE tblusers SET profile_image = ? WHERE user_id = ?", [req.file.filename, req.user_id], (err, result) => {
+            if(err){
+                res.json({success: false, message: err})
+            } else {
+                if(result.affectedRows > 0){                
+                    res.json({success: true, message: "The profile image was updated successfully"})
+                } else {                
+                    res.json({success: false, message: "Profile image was not updated"})
+                }
             }
-        }
-    })
+        })
+    } else {
+        res.json({success: false, message: "An image should be uploaded"})
+    }
 })
 
 // Get user's info by ID
@@ -131,57 +173,6 @@ router.get("/user", (req, res) => {
     } else {
         res.json({success: false, message: "No user_id was entered."})
     }
-})
-
-// Get total followers
-router.get("/followers", (req, res) => {    
-    const user_id = req.query.user_id
-
-    if(user_id){
-        db.query("SELECT count(*) AS totalFollowers FROM tblfollowers WHERE user_id = ?", [user_id], (err, result) => {
-            if(err){
-                res.json({success: false, message: err})
-            } else {
-                res.json({success: true, data: result[0].totalFollowers})
-            }
-        })
-    } else {        
-        res.json({success: false, message: "Provide an user id to get the followers from"})
-    }    
-})
-
-// Get total posts
-router.get("/posts", (req, res) => {    
-    const user_id = req.query.user_id
-
-    if(user_id){
-        db.query("SELECT count(*) AS totalPosts FROM tblposts WHERE user_id = ?", [user_id], (err, result) => {
-            if(err){
-                res.json({success: false, message: err})
-            } else {
-                res.json({success: true, data: result[0].totalPosts})
-            }
-        })
-    } else {        
-        res.json({success: false, message: "Provide an user id to get the posts from"})
-    }    
-})
-
-// Get total likes
-router.get("/likes", (req, res) => {    
-    const user_id = req.query.user_id
-
-    if(user_id){
-        db.query("SELECT count(*) AS totalLikes FROM tbllikes WHERE user_id = ?", [user_id], (err, result) => {
-            if(err){
-                res.json({success: false, message: err})
-            } else {
-                res.json({success: true, data: result[0].totalLikes})
-            }
-        })
-    } else {        
-        res.json({success: false, message: "Provide an user id to get the likes from"})
-    }    
 })
 
 

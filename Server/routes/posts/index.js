@@ -25,8 +25,8 @@ const storage = multer.diskStorage({
         cb(null, './uploads/posts/');
       },
     filename: function(req, file, cb) {
-        const time = new Date().toISOString()
-        cb(null, time.substring(0, time.length - 14) + file.originalname);
+        const time = new Date().getTime()
+        cb(null, sha256(time + file.originalname) + "." + (file.originalname.split('.')[file.originalname.split('.').length -1]).toLowerCase()); // This generates a hash with the timestamp and original name with the original extension
     }
 })
 
@@ -63,7 +63,7 @@ router.get("/feed", CheckJWT, (req,res) => {
     const user_id = req.user_id
 
     if(user_id){
-        // Explanation query: selects all posts from the people you're following
+        // Explanation query: selects all posts from the people you're following and haven't seen yet
         // Add Limit
         const sql = "SELECT * FROM tblposts WHERE tblposts.user_id IN (SELECT user_id AS following FROM tblfollowers WHERE follower = ?) AND NOT EXISTS (SELECT * FROM tblviewed WHERE user_id = ? AND tblviewed.post_id = tblposts.post_id) ORDER BY RAND()"
 
@@ -154,7 +154,6 @@ router.get("/post", (req, res) => {
 //  -> Post
 router.post("/post",  verifyJWT,  upload.single('postImage'), (req, res) => {
     const user_id = req.user_id
-    // const user_id = req.query.user_id
     const media_link = req.file.filename
     const caption = req.body.caption
 
@@ -174,9 +173,8 @@ router.post("/post",  verifyJWT,  upload.single('postImage'), (req, res) => {
 })
 
 //  -> Update (by id)
-router.patch("/post", /*verifyJWT,*/ (req, res) => {
-    // const user_id = req.user_id
-    const user_id = req.body.user_id // Change to req.user_id with JWT
+router.patch("/post", verifyJWT, (req, res) => {
+    const user_id = req.user_id
     const post_id = req.body.post_id
     const caption = req.body.caption
 
@@ -209,12 +207,9 @@ router.patch("/post", /*verifyJWT,*/ (req, res) => {
 })
 
 //  -> Delete (by id) 
-//      => For owner of post & admins
-router.delete("/post", /*verifyJWT,*/ (req, res) => {
-    // const user_id = req.user_id
-    // const role = req.role
-    const user_id = req.query.user_id // Change to req.user_id with JWT
-    const role = req.query.role // Change to req.role with JWT
+//      => For owner of post
+router.delete("/post", verifyJWT, (req, res) => {
+    const user_id = req.user_id
     const post_id = req.query.post_id
 
     if(post_id){
@@ -224,11 +219,10 @@ router.delete("/post", /*verifyJWT,*/ (req, res) => {
             if(err){
                 res.json({success: false, message: err})                
             } else {
-                // Check if the post is from the user it's requested by or if it's an admin
-                if(result[0].posts_found > 0 || role == "admin"){
-                   const sql = "DELETE FROM tblposts WHERE post_id = ?"
+                if(result[0].posts_found > 0){
+                   const sql = "DELETE FROM tblposts WHERE post_id = ? AND user_id = ?"
 
-                    db.query(sql, [post_id], (err, result) => {
+                    db.query(sql, [post_id, user_id], (err, result) => {
                         if(err){
                             res.json({success: false, message: err})
                         } else {
@@ -266,7 +260,6 @@ router.get("/posts", (req, res) => {
             if(err){
                 res.json({success: false, message: err})
             } else {
-                console.log(result)
                 const user_id = result[0].user_id
                 const sql = "SELECT * FROM tblposts WHERE user_id = ?"
 
@@ -355,6 +348,19 @@ router.get("/like", CheckJWT, (req, res) => {
     }
 })
 
+// Get Liked post from user
+router.get("/likes", CheckJWT, (req, res) => {
+    const user_id = req.user_id
+
+    db.query("SELECT * FROM tbllikes WHERE liker = ?", [user_id], (err, result) => {
+        if(err){
+            res.json({success: false, message: err})
+        } else {
+            res.json({success: true, data: result})           
+        }
+    })
+})
+
 // Unliked post
 router.delete("/like", CheckJWT, (req, res) => {
     const user_id = req.user_id
@@ -375,7 +381,6 @@ router.delete("/like", CheckJWT, (req, res) => {
 
 // Get All Comments
 router.get("/comments", CheckJWT, (req, res) => {
-    const user_id = req.user_id
     const post_id = req.query.post_id
     
     if(post_id){
@@ -429,7 +434,7 @@ router.delete("/comment", CheckJWT, (req, res) => {
                         }
                     })
                 } else {
-                    res.json({success: false, message: "The commented you tried to delete is not yours./"})
+                    res.json({success: false, message: "The commented you tried to delete is not yours."})
                 }                
             }
         })

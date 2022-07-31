@@ -64,7 +64,9 @@ router.post("/register", async(req, res) => {
 router.post("/login", (req, res) => {
     const username = "@" + req.body.username;
     const password = sha256(req.body.password + authConfig.SALT);
-    console.log(password)    
+    
+    console.log(username, password)
+
     if (username && password) {
         const sql = "SELECT * FROM tblusers WHERE username = ? and password = ?";
   

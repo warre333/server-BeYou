@@ -85,19 +85,18 @@ router.get("/feed", CheckJWT, (req,res) => {
 // Get posts to show (trending)
 router.get("/trending", (req,res) => {
     const token = req.headers["x-access-token"];
+    let user_id = ""
     
     if(token) {
         jwt.verify(token, JWTSECRET, (err, decoded) => {
             if(decoded){
-                req.user_id = decoded.user_id;
-                req.role = decoded.role;
+                user_id = decoded.user_id;
             }
         })
     } 
 
-    const user_id = req.user_id
-
-    if(user_id){
+    console.log(user_id, req.headers, req.body)
+    if(user_id != ""){
         // Explanation query: select all posts where post_id's are the same and where the user_id is not found (= not seen)
         // Add Limit
         const sql = "SELECT * FROM tblposts WHERE NOT EXISTS (SELECT * FROM tblviewed WHERE user_id = ? AND tblviewed.post_id = tblposts.post_id) ORDER BY ranking DESC"

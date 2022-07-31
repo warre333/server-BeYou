@@ -32,7 +32,7 @@ const storage = multer.diskStorage({
 
 // Define image types
 const fileFilter = (req, file, cb) => {
-  if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png' || file.mimetype === 'image/jpg' || file.mimetype === 'image/gif') {
+  if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png' || file.mimetype === 'image/jpg' || file.mimetype === 'image/gif' || file.mimetype === 'video/mp4') {
     cb(null, true);
   } else {
     cb(null, false);
@@ -43,7 +43,7 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 1024 * 1024 * 5
+    fileSize: 1024 * 1024 * 10
   },
   fileFilter: fileFilter
 });
@@ -67,12 +67,24 @@ router.get("/feed", CheckJWT, (req,res) => {
         // Add Limit
         const sql = "SELECT * FROM tblposts WHERE tblposts.user_id IN (SELECT user_id AS following FROM tblfollowers WHERE follower = ?) AND NOT EXISTS (SELECT * FROM tblviewed WHERE user_id = ? AND tblviewed.post_id = tblposts.post_id) ORDER BY RAND()"
 
-        db.query(sql, [user_id, user_id, user_id], (err, result) => {
+        db.query(sql, [user_id, user_id], (err, result) => {
             if(err){
                 res.json({success: false, message: err})
             } else {
                 // result[placeinarray].post_id
-                res.json({success: true, data: result})
+                if(result.length > 5){ // Change to the limit that is set on receiving posts from the database
+                    res.json({success: true, data: result, up_to_date: true})
+                } else {
+                    const sql = "SELECT * FROM tblposts WHERE tblposts.user_id IN (SELECT user_id AS following FROM tblfollowers WHERE follower = ?) ORDER BY RAND()"
+
+                    db.query(sql, [user_id], (err, result) => {
+                        if(err){
+                            res.json({success: false, message: err})
+                        } else {
+                            res.json({success: true, data: result, up_to_date: false})
+                        }
+                    })
+                }
             }
         })   
     } else {
@@ -95,7 +107,6 @@ router.get("/trending", (req,res) => {
         })
     } 
 
-    console.log(user_id, req.headers, req.body)
     if(user_id != ""){
         // Explanation query: select all posts where post_id's are the same and where the user_id is not found (= not seen)
         // Add Limit
@@ -106,7 +117,20 @@ router.get("/trending", (req,res) => {
                 res.json({success: false, message: err})
             } else {
                 // result[placeinarray].post_id
-                res.json({success: true, data: result})
+                if(result.length > 5){    
+                    res.json({success: true, data: result, up_to_date: false})
+                } else {                    
+                    const sql = "SELECT * FROM tblposts ORDER BY ranking DESC"
+
+                    db.query(sql, [user_id], (err, result) => {
+                        if(err){
+                            res.json({success: false, message: err})
+                        } else {
+                            // result[placeinarray].post_id
+                            res.json({success: true, data: result, up_to_date: true})
+                        }
+                    })   
+                }
             }
         })   
     } else {
@@ -163,7 +187,8 @@ router.post("/post",  verifyJWT,  upload.single('postImage'), (req, res) => {
             if(err){
                 res.json({success: false, message: err})
             } else {
-                res.json({success: true,  message: "Post has been created successfully."})
+                console.log(result.insertId)
+                res.json({success: true,  data: { message: "Post has been created successfully.", post_id: result.insertId}})
             }
         })
     } else {
@@ -184,7 +209,6 @@ router.patch("/post", verifyJWT, (req, res) => {
             if(err){
                 res.json({success: false, message: err})                
             } else {
-                console.log(result)
                 if(result[0].posts_found > 0){
                     const sql = "UPDATE tblposts SET caption = ? WHERE post_id = ?"
 

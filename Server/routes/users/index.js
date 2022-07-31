@@ -68,7 +68,7 @@ router.get("/profile", (req, res) => {
             } else {
                 if(user_info.length > 0){
                     const userInfo = user_info[0]
-                    const sql = "SELECT * FROM tblposts WHERE user_id = ?"
+                    const sql = "SELECT * FROM tblposts WHERE user_id = ? ORDER BY post_id DESC"
 
                     db.query(sql, [userInfo.user_id], (err, posts) => {
                         if(err){
@@ -113,7 +113,7 @@ router.get("/profile", (req, res) => {
 
 // Save new profile data
 router.patch("/profile", CheckJWT, (req, res) => {
-    const username = req.body.username
+    const username = "@" + req.body.username
     const bio = req.body.bio
     
     if(username){

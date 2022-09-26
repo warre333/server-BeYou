@@ -92,8 +92,6 @@ router.get("/feed", CheckJWT, (req,res) => {
     }
 })
 
-
-
 // Get posts to show (trending)
 router.get("/trending", (req,res) => {
     const token = req.headers["x-access-token"];

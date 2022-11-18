@@ -25,6 +25,7 @@ const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 
 var router = express.Router()
+require('dotenv').config()
 
 const CheckJWT = require("../../middleware/auth/CheckJWT");
 const db = require("../../middleware/database/database.connection")
@@ -37,8 +38,8 @@ router.get("/", (req,res) => {
 const transporter = nodemailer.createTransport({
 	host: "smtp.gmail.com",
 	auth: {
-		user: '', // Put in ENV & KEEP SAFE -> email
-		pass: '', // Put in ENV & KEEP SAFE -> password (can generate app password: https://myaccount.google.com/apppasswords)
+		user: process.env.GMAIL_USER, // Put in ENV & KEEP SAFE -> email
+		pass: process.env.GMAIL_PASS, // Put in ENV & KEEP SAFE -> password (can generate app password: https://myaccount.google.com/apppasswords)
 	},
 	port: 465,
 	secure: true, // true for 465, false for other ports
@@ -54,7 +55,7 @@ async function email(emailToSendTo, subjectEmail, htmlEmail) {
 		// send mail with transport object
 		await transporter.sendMail(
 			{
-				from: "Warre's social media", // sender name
+				from: "BeYou", // sender name
 				to: emailToSendTo, // list of receivers
 				subject: subjectEmail, // Subject line
 				html: htmlEmail, // html body

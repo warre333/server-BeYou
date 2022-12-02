@@ -52,21 +52,15 @@ app.use("/search", require(search + "searchbar"));
 
 
 app.use("/chat", require(chat + "create"));
+app.use("/chat", require(chat + "index"));
 app.use("/chat/all", require(chat + "get-chats"));
 // app.use("/chat", require(chat + "create"));
 
 // Algorithms
 const trending_algorithm = require("./services/trending_algorithm/index");
-const { WEBSITE_URL } = require("./config/api.config");
 
-// .io server
-const httpServer = require("http").createServer();
 
-const io = require("socket.io")(httpServer, {
-  cors: {
-    origin: WEBSITE_URL,
-  },
-});
+
 
 // Start server
 app.listen(4000, '10.43.36.26', () => {

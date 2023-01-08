@@ -2,7 +2,6 @@
 // .io server
 const httpServer = require("http").createServer();
 const express = require("express");
-const socket = require("socket.io");
 
 const CheckJWT = require("../../middleware/auth/CheckJWT");
 const db = require("../../middleware/database/database.connection");
@@ -23,7 +22,14 @@ io.on('connection', (socket) => {
   });
 })
 
-
+io.use((socket, next) => {
+  const username = "test";
+  if (!username) {
+    return next(new Error("invalid username"));
+  }
+  socket.username = username;
+  next();
+});
     // socket.auth = {  };
     // db.query("SELECT * FROM tblusers WHERE user_id = ?", [req.user_id], (err, result_user) => {
     //     db.query("SELECT * FROM tblusers, tblchatrooms, tblchatroom WHERE user_id = ?", [req.query.user_id], (err, result) => {
@@ -32,5 +38,10 @@ io.on('connection', (socket) => {
     // })
     // socket.connect();
 
+httpServer.listen(4001, (err) => {
+  if(err){
+    throw err
+  }
+})
 
 module.exports = router;

@@ -15,12 +15,16 @@ const app = express();
 const server = http.createServer(app, {
 	origin: '*'
 });
-const io = socketio(server);
+const io = socketio(server, { transports : ['websocket', 'polling', 'flashsocket'] });
   
-app.use(cors({origin: '*'}));
+app.use(cors())
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));  
 app.use('/images', express.static('uploads'))
+app.use(function (req, res, next) {
+    res.header('Access-Control-Allow-Origin', '*');
+    next();
+});
 
 // Import the routes
 const auth = "./routes/auth/"
@@ -65,48 +69,59 @@ app.use("/chat/all", require(chat + "get-chats"));
 // app.use("/chat", require(chat + "create"));
 
 io.on('connect', (socket) => {
-	console.log("connecg")
-	socket.on('join', ({ name, room }, callback) => {
-		const { error, user } = addUser({ id: socket.id, name, room });
+	socket.on('join', ({ user_id, chatroom }, callback) => {
+		console.log(user_id, chatroom);
+		if(user_id && user_id !== "none" && chatroom){
+			db.query("SELECT * FROM tblusers WHERE user_id = ?", [user_id], (err, result) => {
+				if(err){
+					console.log(err);
+				} else {
+					console.log(result);
+					const { error, user } = addUser({ id: user_id, name: result[0].username, chatroom });
+		
+					if(error) return callback(error);
+				
+					socket.join(user.chatroom);
+				
+					// socket.emit('message', { user: 'admin', text: `${user.name}, welcome to room ${user.chatroom}.`});
+					socket.broadcast.to(user.chatroom).emit('message', { user: 'admin', text: `${user.name} has joined!` });
+				
+					io.to(user.chatroom).emit('roomData', { chatroom: user.chatroom, users: getUsersInRoom(user.chatroom) });
+				
+					callback();
+				}
+			})	
+		}			
+	});
+  
+	socket.on('sendMessage', ({user_id, chatroom, message}, callback) => {
+		const user = getUser(user_id);
+		console.log("sendMessage", user_id, user, message);
 	
-		if(error) return callback(error);
-	
-		socket.join(user.room);
-	
-		socket.emit('message', { user: 'admin', text: `${user.name}, welcome to room ${user.room}.`});
-		socket.broadcast.to(user.room).emit('message', { user: 'admin', text: `${user.name} has joined!` });
-	
-		io.to(user.room).emit('roomData', { room: user.room, users: getUsersInRoom(user.room) });
+		io.to(user.chatroom).emit('message', { user: user.name, text: message });
 	
 		callback();
 	});
   
-	socket.on('sendMessage', (message, callback) => {
-		const user = getUser(socket.id);
-	
-		io.to(user.room).emit('message', { user: user.name, text: message });
-	
-		callback();
-	});
-  
-	socket.on('disconnect', () => {
-	  	const user = removeUser(socket.id);
+	socket.on('leave', ({user_id}) => {
+	  	const user = removeUser(user_id);
   
 		if(user) {
-			io.to(user.room).emit('message', { user: 'Admin', text: `${user.name} has left.` });
-			io.to(user.room).emit('roomData', { room: user.room, users: getUsersInRoom(user.room)});
+			io.to(user.chatroom).emit('message', { user: 'Admin', text: `${user.name} has left.` });
+			io.to(user.chatroom).emit('roomData', { chatroom: user.chatroom, users: getUsersInRoom(user.chatroom)});
 		}
 	})
 });
-
+ 
 // Algorithms
 const trending_algorithm = require("./services/trending_algorithm/index");
+const db = require("./middleware/database/database.connection");
 
 
 
 
 
 // Start server
-server.listen(4000, '192.168.0.138', () => {
+server.listen(4000, '10.43.36.26', () => {
  	console.log("API has been started on port 4000!");
 })

@@ -1,3 +1,5 @@
+const { MessageStore } = require(".");
+
 const users = [];
 
 const addUser = ({ id, name, chatroom }) => {
@@ -26,13 +28,13 @@ const removeUser = (id) => {
 const getUser = (id) => {
     for(let i = 0; i < users.length; i++){
         if(users[i].id === id){
-            console.log(users[i]);
+            // console.log(users[i]);
             return users[i]
         }
     }
 }
 // const getUser = (id) => users.find((user) => user.id === id);
 
-const getUsersInRoom = (chatroom) => { console.log(users); users.filter((user) => user.chatroom === chatroom) };
+const getUsersInRoom = (chatroom) => { users.filter((user) => user.chatroom === chatroom) };
 
 module.exports = { addUser, removeUser, getUser, getUsersInRoom };

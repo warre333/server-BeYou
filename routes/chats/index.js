@@ -1,47 +1,26 @@
+class AMessageStore {
+  saveMessage(message) {}
+  findMessagesForChat(id) {}
+}
 
-// .io server
-const httpServer = require("http").createServer();
-const express = require("express");
-
-const CheckJWT = require("../../middleware/auth/CheckJWT");
-const db = require("../../middleware/database/database.connection");
-
-var router = express.Router();
-
-const { WEBSITE_URL } = require("../../config/api.config");
-
-const io = require("socket.io")(httpServer, {
-  cors: {
-    origin: WEBSITE_URL,
-  },
-});
-
-io.on('connection', (socket) => {
-  socket.onAny((event, ...args) => {
-    console.log(event, args);
-  });
-})
-
-io.use((socket, next) => {
-  const username = "test";
-  if (!username) {
-    return next(new Error("invalid username"));
+class MessageStore extends AMessageStore {
+  constructor() {
+    super();
+    this.messages = [];
   }
-  socket.username = username;
-  next();
-});
-    // socket.auth = {  };
-    // db.query("SELECT * FROM tblusers WHERE user_id = ?", [req.user_id], (err, result_user) => {
-    //     db.query("SELECT * FROM tblusers, tblchatrooms, tblchatroom WHERE user_id = ?", [req.query.user_id], (err, result) => {
 
-    //     })
-    // })
-    // socket.connect();
-
-httpServer.listen(4001, (err) => {
-  if(err){
-    throw err
+  saveMessage(message) {
+    this.messages.push(message);
   }
-})
 
-module.exports = router;
+  findMessagesForChat(id) {
+    const messages = this.messages.filter(
+      ({ from, to }) => to === id
+    ); 
+    return messages
+  }
+}
+
+module.exports = {
+  MessageStore
+};

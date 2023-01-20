@@ -9,6 +9,7 @@ const socketio = require('socket.io');
 const http = require('http');
 
 const { addUser, getUsersInRoom, getUser, removeUser } = require("./routes/chats/users");
+const { MessageStore } = require("./routes/chats");
 const { WEBSITE_URL } = require("./config/api.config");
 
 const app = express();
@@ -16,7 +17,8 @@ const server = http.createServer(app, {
 	origin: '*'
 });
 const io = socketio(server, { transports : ['websocket', 'polling', 'flashsocket'] });
-  
+const messageStore = new MessageStore();
+
 app.use(cors())
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));  
@@ -68,38 +70,50 @@ app.use("/chat", require(chat + "create"));
 app.use("/chat/all", require(chat + "get-chats"));
 // app.use("/chat", require(chat + "create"));
 
+const findMessagesForChat = (chatroom) => {
+    const messagesPerUser = [];
+
+    messageStore.findMessagesForChat(chatroom).forEach(async(message) => {
+        const { from, fromUsername, to } = message;
+				
+		messagesPerUser.push({user_id: from, user: fromUsername, text: message.text});
+    }); 
+
+
+	return messagesPerUser
+}
+
 io.on('connect', (socket) => {
 	socket.on('join', ({ user_id, chatroom }, callback) => {
-		console.log(user_id, chatroom);
 		if(user_id && user_id !== "none" && chatroom){
-			db.query("SELECT * FROM tblusers WHERE user_id = ?", [user_id], (err, result) => {
+			db.query("SELECT * FROM tblusers WHERE user_id = ?", [user_id], async(err, result) => {
 				if(err){
 					console.log(err);
 				} else {
-					console.log(result);
 					const { error, user } = addUser({ id: user_id, name: result[0].username, chatroom });
 		
 					if(error) return callback(error);
 				
 					socket.join(user.chatroom);
-				
-					// socket.emit('message', { user: 'admin', text: `${user.name}, welcome to room ${user.chatroom}.`});
-					socket.broadcast.to(user.chatroom).emit('message', { user: 'admin', text: `${user.name} has joined!` });
-				
-					io.to(user.chatroom).emit('roomData', { chatroom: user.chatroom, users: getUsersInRoom(user.chatroom) });
+
+					const messages = await findMessagesForChat(user.chatroom)
+
+					io.to(user.chatroom).emit('roomData', { chatroom: user.chatroom, users: getUsersInRoom(user.chatroom), messages: messages });
 				
 					callback();
 				}
 			})	
 		}			
 	});
-  
+
+	
+
 	socket.on('sendMessage', ({user_id, chatroom, message}, callback) => {
 		const user = getUser(user_id);
-		console.log("sendMessage", user_id, user, message);
 	
-		io.to(user.chatroom).emit('message', { user: user.name, text: message });
-	
+		io.to(user.chatroom).emit('message', { user_id: user.id, user: user.name, text: message });
+		messageStore.saveMessage({ from: user.id, fromUsername: user.name, text: message, to: chatroom });
+
 		callback();
 	});
   

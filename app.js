@@ -29,21 +29,18 @@ app.use(function (req, res, next) {
 });
 
 // Import the routes
-const auth = "./routes/auth/"
-const email = "./routes/email/"
-const posts = "./routes/posts/"
-const users = "./routes/users/"
-const search = "./routes/search/"
-const chat = "./routes/chats/"
+const auth = "./routes/auth/",
+ posts = "./routes/posts/",
+ users = "./routes/users/",
+ search = "./routes/search/",
+ chat = "./routes/chats/",
+ admin = "./routes/admin/",
+ ads = "./routes/advertisements/"
 
-// Let the app use the routes with the right file
 // Authentication
 app.use("/auth/", require(auth + "index"));
 app.use("/auth/login", require(auth + "login"));
 app.use("/auth/register", require(auth + "register"));
-
-// Email
-// app.use("/email", email);
 
 // Posts
 app.use("/posts/", require(posts + "user-posts"));
@@ -54,6 +51,7 @@ app.use("/posts/like", require(posts + "like"));
 app.use("/posts/comment", require(posts + "comments"));
 app.use("/posts/view", require(posts + "view"));
 
+// Users
 app.use("/users", require(users + "index"));
 app.use("/users/likes", require(users + "likes"));
 app.use("/users/profile", require(users + "profile"));
@@ -61,14 +59,24 @@ app.use("/users/password", require(users + "change-password"));
 app.use("/users/email", require(users + "change-email"));
 app.use("/users/friends", require(users + "friends"));
 
-
+// Search
 app.use("/search", require(search + "searchbar"));
 
-
+// Chat
 app.use("/chat", require(chat + "create"));
-// app.use("/chat", require(chat + "index"));
 app.use("/chat/all", require(chat + "get-chats"));
-// app.use("/chat", require(chat + "create"));
+
+// Advertisements
+app.use("/advertisements/start/payment", require(ads + "start/create-payment"));
+
+// Admin
+app.use("/admin/", require(admin + "index"));
+app.use("/admin/analytics", require(admin + "analytics"));
+app.use("/admin/users", require(admin + "users/remove"));
+app.use("/admin/posts", require(admin + "posts/get-all"));
+app.use("/admin/posts/search", require(admin + "posts/get"));
+app.use("/admin/posts", require(admin + "posts/remove"));
+
 
 const findMessagesForChat = (chatroom) => {
     const messagesPerUser = [];

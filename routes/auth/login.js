@@ -17,8 +17,6 @@ router.post("/", (req, res) => {
     const username = "@" + req.body.username;
     const password = sha256(req.body.password + authConfig.SALT);
     
-    console.log(username, password)
-
     if (username && password) {  
         db.query("SELECT * FROM tblusers WHERE username = ? and password = ?", [username.toLowerCase(), password], (err, result) => {
             if (err) {
@@ -34,7 +32,7 @@ router.post("/", (req, res) => {
                     }
                     const token = jwt.sign(data, authConfig.JWTSECRET, { expiresIn: 7200 })
                     
-                    res.json({success: true, token: token});
+                    res.json({success: true, token: token, role});
                 } else {
                     res.json({success: false, message: "The username or password is wrong."});
                 }

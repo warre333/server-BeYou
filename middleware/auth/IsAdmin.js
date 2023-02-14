@@ -1,12 +1,6 @@
-const express = require("express");
-const mysql = require("mysql");
-const bodyParser = require("body-parser");
-const cors = require("cors");
-const sha256 = require("js-sha256");
 const jwt = require("jsonwebtoken");
-const nodemailer = require("nodemailer");
+const authConfig = require("../../config/auth.config");
 
-const CheckJWT = require("./CheckJWT")
 
 // Check if user is admin
 const isAdmin = (req, res, next) => {
@@ -18,7 +12,7 @@ const isAdmin = (req, res, next) => {
         jwt.verify(token, authConfig.JWTSECRET, (err, decoded) => {
             if(err){
                 res.json({auth: false, message: "Failed to authenticate"});
-            } else{                
+            } else{               
                 if(decoded.role == "admin"){
                     req.userId = decoded.id;
                     req.role = decoded.role;

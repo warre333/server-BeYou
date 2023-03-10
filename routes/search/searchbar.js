@@ -23,23 +23,13 @@ const { SEARCH_PAGE_SIZE } = require("../../config/search.config");
 router.get("/", (req, res) => {
     const { keywords, page } = req.query
 
-    if(page && page != null){
-        db.query("SELECT tblusers.*, (SELECT COUNT(tblfollowers.user_id) FROM tblfollowers WHERE tblfollowers.user_id = tblusers.user_id) AS followers FROM tblusers WHERE username LIKE ? AND visible = 1 ORDER BY followers DESC LIMIT ? OFFSET ?", ["%" + keywords + "%", SEARCH_PAGE_SIZE, SEARCH_PAGE_SIZE * (page - 1)], (err, result) => {
-            if(err){
-                res.json({success: false, message: err})
-            } else {
-                res.json({success: true, data: result})
-            }
-        })
-    } else {
-        db.query("SELECT tblusers.*, (SELECT COUNT(tblfollowers.user_id) FROM tblfollowers WHERE tblfollowers.user_id = tblusers.user_id) AS followers FROM tblusers WHERE username LIKE ? AND visible = 1 ORDER BY followers DESC LIMIT ? OFFSET 1", ["%" + keywords + "%", SEARCH_PAGE_SIZE], (err, result) => {
-            if(err){
-                res.json({success: false, message: err})
-            } else {
-                res.json({success: true, data: result})
-            }
-        })
-    }
+    db.query("SELECT tblusers.*, (SELECT COUNT(tblfollowers.user_id) FROM tblfollowers WHERE tblfollowers.user_id = tblusers.user_id) AS followers FROM tblusers WHERE username LIKE ? AND visible = 1 ORDER BY followers DESC LIMIT ? OFFSET ?", ["%" + keywords + "%", SEARCH_PAGE_SIZE, SEARCH_PAGE_SIZE * (page - 1) || 0], (err, result) => {
+        if(err){
+            res.json({success: false, message: err})
+        } else {
+            res.json({success: true, data: result})
+        }
+    })
 })
 
 module.exports = router;

@@ -12,12 +12,24 @@ const { addUser, getUsersInRoom, getUser, removeUser } = require("./routes/chats
 const { MessageStore } = require("./routes/chats");
 const { WEBSITE_URL } = require("./config/api.config");
 
+// Import the routes
+const auth = "./routes/auth/",
+ posts = "./routes/posts/",
+ users = "./routes/users/",
+ search = "./routes/search/",
+ chat = "./routes/chats/",
+ admin = "./routes/admin/",
+ ads = "./routes/advertisements/"
+
+
 const app = express();
 const server = http.createServer(app, {
 	origin: '*'
 });
 const io = socketio(server, { transports : ['websocket', 'polling', 'flashsocket'] });
 const messageStore = new MessageStore();
+
+app.use("/webhooks", require("./routes/advertisements/start/paid"));
 
 app.use(cors())
 app.use(express.json());
@@ -28,14 +40,6 @@ app.use(function (req, res, next) {
     next();
 });
 
-// Import the routes
-const auth = "./routes/auth/",
- posts = "./routes/posts/",
- users = "./routes/users/",
- search = "./routes/search/",
- chat = "./routes/chats/",
- admin = "./routes/admin/",
- ads = "./routes/advertisements/"
 
 // Authentication
 app.use("/auth/", require(auth + "index"));
@@ -119,15 +123,16 @@ io.on('connect', (socket) => {
 	socket.on('sendMessage', ({user_id, chatroom, message}, callback) => {
 		const user = getUser(user_id);
 	
+		console.log(user_id, chatroom, message);
 		io.to(user.chatroom).emit('message', { user_id: user.id, user: user.name, text: message });
 		messageStore.saveMessage({ from: user.id, fromUsername: user.name, text: message, to: chatroom });
 
 		callback();
 	});
-  
+
 	socket.on('leave', ({user_id}) => {
 	  	const user = removeUser(user_id);
-  
+
 		if(user) {
 			io.to(user.chatroom).emit('message', { user: 'Admin', text: `${user.name} has left.` });
 			io.to(user.chatroom).emit('roomData', { chatroom: user.chatroom, users: getUsersInRoom(user.chatroom)});

@@ -5,7 +5,8 @@
   "main": "app.js",
   "scripts": {
     "start": "nodemon app.js",
-    "pm2": "pm2 start app.js --watch"
+    "pm2": "pm2 start app.js --watch",
+    "webhooks": "C:/Users/WarreBossaert/Downloads/stripe_1.13.10_windows_x86_64/stripe listen --forward-to http://10.43.36.26:4000/webhooks"
   },
   "author": "Bossaert Warre",
   "license": "ISC",

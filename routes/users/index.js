@@ -51,7 +51,7 @@ router.get("/", (req, res) => {
     const user_id = req.query.user_id
 
     if(user_id){
-        const sql = "SELECT username, profile_image FROM tblusers WHERE user_id = ?"
+        const sql = "SELECT username, role, profile_image FROM tblusers WHERE user_id = ?"
         
         db.query(sql, [user_id], (err, resultUser) => {
             if(err){

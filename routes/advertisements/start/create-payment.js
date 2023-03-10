@@ -7,26 +7,28 @@ const stripe = require('stripe')('sk_test_51MbMPvBVdpaK1AsGqefv3y85wiNmEH4cq8ZAx
 var router = express.Router();
 
 router.get("/", async(req, res) => {
-  const { begin_date, end_date, amount } = req.query
-  const session = await stripe.checkout.sessions.create({
-    line_items: [
-      {
-        price_data: {
-          currency: 'usd', 
-          product_data: {
-            name: 'Advertisement'
-          }, 
-          unit_amount: 2000
-        },
-        quantity: 1,
-      },
-    ],
-    mode: 'payment',
-    success_url: 'http://localhost:3000/success.html', // Give query again
-    cancel_url: 'http://localhost:3000/cancel.html',
-  });
+  const { begin_date, end_date, post_id, daily_budget } = req.query
 
-  res.json({success: true, data: session})
+  console.log(begin_date, end_date, post_id, daily_budget, (new Date(end_date).getTime() - new Date(begin_date).getTime()), Math.ceil((new Date(end_date).getTime() - new Date(begin_date).getTime()) /(1000 * 3600 * 24)));
+  if(begin_date, end_date, post_id, daily_budget){    
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: (daily_budget * Math.ceil((new Date(end_date).getTime() - new Date(begin_date).getTime()) /(1000 * 3600 * 24))) * 100,
+      currency: 'usd',
+      automatic_payment_methods: {
+          enabled: true
+      }
+    }); 
+
+    db.query("INSERT INTO tbladvertisements(post_id, stripe_id, daily_budget, start_date, end_date) VALUES(?, ?, ?, ?, ?)", [post_id, paymentIntent.id, daily_budget, begin_date, end_date], (err, result) => {
+      if(err){
+        res.json({success: false, message: err})
+      } else {
+        res.json({success: true, data: paymentIntent.client_secret})
+      }
+    })
+  } else {
+    res.json({success: false, message: "You should provide all the required data."})
+  }
 })
 
 module.exports = router;

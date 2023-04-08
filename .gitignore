@@ -17,5 +17,6 @@ node_modules/
 Server/
 uploads/posts/*
 uploads/profiles/*
+# !uploads/profiles/filename.png
 client/
 client-gip-6if/

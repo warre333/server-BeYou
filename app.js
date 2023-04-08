@@ -71,7 +71,10 @@ app.use("/chat", require(chat + "create"));
 app.use("/chat/all", require(chat + "get-chats"));
 
 // Advertisements
-app.use("/advertisements/start/payment", require(ads + "start/create-payment"));
+app.use("/advertisements", require(ads + "start/create-payment"));
+app.use("/advertisements", require(ads + "from-user"));
+app.use("/advertisements/active", require(ads + "active"));
+app.use("/advertisements/view", require(ads + "view"));
 
 // Admin
 app.use("/admin/", require(admin + "index"));
@@ -149,6 +152,6 @@ const db = require("./middleware/database/database.connection");
 
 
 // Start server
-server.listen(4000, '10.43.36.26', () => {
+server.listen(4000, '192.168.0.138', () => {
  	console.log("API has been started on port 4000!");
 })

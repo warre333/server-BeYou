@@ -18,36 +18,6 @@ const isAdmin = require("../../middleware/auth/IsAdmin");
 const { JWTSECRET } = require("../../config/auth.config");
 const { API_URL } = require("../../config/api.config");
 
-// Uploading images to backend
-// Define storage + filenames
-const storage = multer.diskStorage({
-    destination: function(req, file, cb) {
-        cb(null, './uploads/posts/');
-      },
-    filename: function(req, file, cb) {
-        const time = new Date().getTime()
-        cb(null, sha256(time + file.originalname) + "." + (file.originalname.split('.')[file.originalname.split('.').length -1]).toLowerCase()); // This generates a hash with the timestamp and original name with the original extension
-    }
-})
-
-// Define image types
-const fileFilter = (req, file, cb) => {
-  if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png' || file.mimetype === 'image/jpg' || file.mimetype === 'image/gif' || file.mimetype === 'video/mp4') {
-    cb(null, true);
-  } else {
-    cb(null, false);
-  }
-};
-
-// Upload instance
-const upload = multer({
-  storage: storage,
-  limits: {
-    fileSize: 1024 * 1024 * 10
-  },
-  fileFilter: fileFilter
-});
-
 // Get All Comments
 router.get("/all", CheckJWT, (req, res) => {
     const post_id = req.query.post_id
@@ -103,7 +73,7 @@ router.delete("/", CheckJWT, (req, res) => {
                         }
                     })
                 } else {
-                    res.json({success: false, message: "The commented you tried to delete is not yours."})
+                    res.json({success: false, message: "The comment you tried to delete is not yours."})
                 }                
             }
         })

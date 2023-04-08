@@ -6,21 +6,21 @@ const stripe = require('stripe')('sk_test_51MbMPvBVdpaK1AsGqefv3y85wiNmEH4cq8ZAx
 
 var router = express.Router();
 
-router.get("/", async(req, res) => {
-  const { begin_date, end_date, post_id, daily_budget } = req.query
+router.post("/", async(req, res) => {
+  const { post_id, budget } = req.body
 
-  console.log(begin_date, end_date, post_id, daily_budget, (new Date(end_date).getTime() - new Date(begin_date).getTime()), Math.ceil((new Date(end_date).getTime() - new Date(begin_date).getTime()) /(1000 * 3600 * 24)));
-  if(begin_date, end_date, post_id, daily_budget){    
+  if(post_id, budget){  
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: (daily_budget * Math.ceil((new Date(end_date).getTime() - new Date(begin_date).getTime()) /(1000 * 3600 * 24))) * 100,
+      amount: budget * 100,
       currency: 'usd',
       automatic_payment_methods: {
           enabled: true
       }
     }); 
 
-    db.query("INSERT INTO tbladvertisements(post_id, stripe_id, daily_budget, start_date, end_date) VALUES(?, ?, ?, ?, ?)", [post_id, paymentIntent.id, daily_budget, begin_date, end_date], (err, result) => {
+    db.query("INSERT INTO tbladvertisements(post_id, stripe_id, budget) VALUES(?, ?, ?)", [post_id, paymentIntent.id, budget * 100], (err, result) => {
       if(err){
+        console.log(err)
         res.json({success: false, message: err})
       } else {
         res.json({success: true, data: paymentIntent.client_secret})

@@ -39,7 +39,7 @@ router.post('', express.raw({type: 'application/json'}), (req, res) => {
     switch (event.type) {
       case 'payment_intent.succeeded':
         console.log(obj);
-        db.query("UPDATE tbladvertisements SET status = 'paid' WHERE stripe_id = ?", [obj.id], (err, result) => {
+        db.query("UPDATE tbladvertisements SET status = 'active' WHERE stripe_id = ?", [obj.id], (err, result) => {
           if(err){
             console.log(err)
           } 

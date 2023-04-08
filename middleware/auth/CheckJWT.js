@@ -17,6 +17,7 @@ const verifyJWT = (req, res, next) => {
     } else {
         jwt.verify(token, authConfig.JWTSECRET, (err, decoded) => {
             if(err){
+                console.log(err)
                 res.json({auth: false, message: "Failed to authenticate"});
             } else{
                 req.user_id = decoded.user_id;

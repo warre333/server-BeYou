@@ -1,22 +1,11 @@
-
-
 const express = require("express");
-const mysql = require("mysql");
-const bodyParser = require("body-parser");
-const cors = require("cors");
 const sha256 = require("js-sha256");
-const jwt = require("jsonwebtoken");
-const nodemailer = require("nodemailer");
-const path = require("path")
 var multer = require('multer');
+
 var router = express.Router();
 
-const CheckJWT = require("../../middleware/auth/CheckJWT")
 const db = require("../../middleware/database/database.connection");
 const verifyJWT = require("../../middleware/auth/CheckJWT");
-const isAdmin = require("../../middleware/auth/IsAdmin");
-const { JWTSECRET } = require("../../config/auth.config");
-const { API_URL } = require("../../config/api.config");
 
 // Uploading images to backend
 // Define storage + filenames
@@ -54,9 +43,7 @@ router.get("/", (req, res) => {
     const post_id = req.query.post_id
 
     if(post_id){
-        const sql = "SELECT * FROM tblposts WHERE post_id = ?"
-
-        db.query(sql, [post_id], (err, result) => {
+        db.query("SELECT P.*, (SELECT COUNT(V.post_id) FROM tblviewed V WHERE V.post_id = P.post_id) AS views FROM tblposts P WHERE P.post_id = ?", [post_id], (err, result) => {
             if(err){
                 res.json({success: false, message: err})
             } else {
@@ -80,13 +67,10 @@ router.post("/",  verifyJWT,  upload.single('postImage'), (req, res) => {
     const caption = req.body.caption
 
     if(media_link){
-        const sql = "INSERT INTO tblposts(user_id, media_link, caption) VALUES(?,?,?)"
-
-        db.query(sql, [user_id, media_link, caption], (err, result) => {
+        db.query("INSERT INTO tblposts(user_id, media_link, caption) VALUES(?,?,?)", [user_id, media_link, caption], (err, result) => {
             if(err){
                 res.json({success: false, message: err})
             } else {
-                console.log(result.insertId)
                 res.json({success: true,  data: { message: "Post has been created successfully.", post_id: result.insertId}})
             }
         })
@@ -102,16 +86,13 @@ router.patch("/", verifyJWT, (req, res) => {
     const caption = req.body.caption
 
     if(caption){
-        const sql = "SELECT count(*) as posts_found FROM tblposts WHERE user_id = ? AND post_id = ?"
-
-        db.query(sql, [user_id, post_id], (err, result) => {
+        db.query("SELECT count(*) as posts_found FROM tblposts WHERE user_id = ? AND post_id = ?", [user_id, post_id], (err, result) => {
             if(err){
                 res.json({success: false, message: err})                
             } else {
                 if(result[0].posts_found > 0){
-                    const sql = "UPDATE tblposts SET caption = ? WHERE post_id = ?"
 
-                    db.query(sql, [caption, post_id], (err, result) => {
+                    db.query("UPDATE tblposts SET caption = ? WHERE post_id = ?", [caption, post_id], (err, result) => {
                         if(err){
                             res.json({success: false, message: err})
                         } else {
@@ -135,16 +116,12 @@ router.delete("/", verifyJWT, (req, res) => {
     const post_id = req.query.post_id
 
     if(post_id){
-        const sql = "SELECT count(*) as posts_found FROM tblposts WHERE user_id = ? AND post_id = ?"
-
-        db.query(sql, [user_id, post_id], (err, result) => {
+        db.query("SELECT count(*) as posts_found FROM tblposts WHERE user_id = ? AND post_id = ?", [user_id, post_id], (err, result) => {
             if(err){
                 res.json({success: false, message: err})                
             } else {
                 if(result[0].posts_found > 0){
-                   const sql = "DELETE FROM tblposts WHERE post_id = ? AND user_id = ?"
-
-                    db.query(sql, [post_id, user_id], (err, result) => {
+                    db.query("DELETE FROM tblposts WHERE post_id = ? AND user_id = ?", [post_id, user_id], (err, result) => {
                         if(err){
                             res.json({success: false, message: err})
                         } else {

@@ -1,5 +1,4 @@
 const express = require("express");
-const socket = require("socket.io");
 const CheckJWT = require("../../middleware/auth/CheckJWT");
 const db = require("../../middleware/database/database.connection");
 

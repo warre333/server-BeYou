@@ -1,8 +1,7 @@
 const jwt = require("jsonwebtoken");
 const authConfig = require("../../config/auth.config");
 
-
-// Check if user is admin
+// Check if user is admin with JWT
 const isAdmin = (req, res, next) => {
     const token = req.headers["x-access-token"]; // Token is undefined when sent a post without data
     

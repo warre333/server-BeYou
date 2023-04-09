@@ -1,21 +1,10 @@
 
 const express = require("express");
-const mysql = require("mysql");
-const bodyParser = require("body-parser");
-const cors = require("cors");
-const sha256 = require("js-sha256");
-const jwt = require("jsonwebtoken");
-const nodemailer = require("nodemailer");
-var multer = require('multer');
 
 var router = express.Router();
 
 const CheckJWT = require("../../middleware/auth/CheckJWT")
-const isAdmin = require("../../middleware/auth/IsAdmin")
 const db = require("../../middleware/database/database.connection");
-const verifyJWT = require("../../middleware/auth/CheckJWT");
-const authConfig = require("../../config/auth.config");
-const e = require("express");
 
 // Get all friends from the user that's logged in
 router.get("/", CheckJWT, (req, res) => {

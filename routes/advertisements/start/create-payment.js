@@ -1,6 +1,5 @@
 const express = require("express");
 const db = require("../../../middleware/database/database.connection");
-const CheckJWT = require("../../../middleware/auth/CheckJWT")
 
 const stripe = require('stripe')('sk_test_51MbMPvBVdpaK1AsGqefv3y85wiNmEH4cq8ZAxok8b4Q2HvAmFHbVaQzyhx9GlvBtdhcBcl0rZ9WIcvd3uAzA3Q5h00hy2bpsvI');
 

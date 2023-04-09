@@ -1,22 +1,9 @@
 
 
 const express = require("express");
-const mysql = require("mysql");
-const bodyParser = require("body-parser");
-const cors = require("cors");
-const sha256 = require("js-sha256");
-const jwt = require("jsonwebtoken");
-const nodemailer = require("nodemailer");
-const path = require("path")
-var multer = require('multer');
 var router = express.Router();
 
-const CheckJWT = require("../../middleware/auth/CheckJWT")
 const db = require("../../middleware/database/database.connection");
-const verifyJWT = require("../../middleware/auth/CheckJWT");
-const isAdmin = require("../../middleware/auth/IsAdmin");
-const { JWTSECRET } = require("../../config/auth.config");
-const { API_URL } = require("../../config/api.config");
 const { SEARCH_PAGE_SIZE } = require("../../config/search.config");
 
 // Search

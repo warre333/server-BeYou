@@ -1,14 +1,9 @@
 const express = require("express");
-const mysql = require("mysql");
-const bodyParser = require("body-parser");
-const cors = require("cors");
 const sha256 = require("js-sha256");
 const jwt = require("jsonwebtoken");
-const nodemailer = require("nodemailer");
 
 var router = express.Router();
 
-const CheckJWT = require("../../middleware/auth/CheckJWT")
 const db = require("../../middleware/database/database.connection")
 const authConfig = require("../../config/auth.config")
 
@@ -22,17 +17,13 @@ router.post("/", async(req, res) => {
     const email = req.body.email;
     const password = sha256(req.body.password + authConfig.SALT);
   
-    const sql = "INSERT INTO tblusers (username, password, email) VALUES (?,?,?)";
   
     if (!containsWhitespace(username) && password && email) {
-        db.query(sql, [username, password, email], (err, result) => {
+        db.query("INSERT INTO tblusers (username, password, email) VALUES (?,?,?)", [username, password, email], (err, result) => {
             if (err) {
                 res.send(err); 
-            } else {
-                console.log(result);
-                const sql = "SELECT * FROM tblusers WHERE email = ? and password = ?";
-  
-                db.query(sql, [email, password], (err, result) => {
+            } else {  
+                db.query("SELECT * FROM tblusers WHERE email = ? and password = ?", [email, password], (err, result) => {
                     if (err) {
                         res.send(err);
                     } else {

@@ -1,5 +1,3 @@
-
-
 const express = require("express");
 
 var router = express.Router();
@@ -39,9 +37,7 @@ router.get("/", CheckJWT, (req,res) => {
                             ad++
                         }
         
-                        console.log(posts)
-                        res.json({success: true, data: posts, up_to_date: true})
-        
+                        res.json({success: true, data: posts, up_to_date: true})        
                     }
                 })
                 
@@ -50,9 +46,7 @@ router.get("/", CheckJWT, (req,res) => {
                 // if(result.length > 5){ // Change to the limit that is set on receiving posts from the database
                 //     res.json({success: true, data: result, up_to_date: true})
                 // } else {
-                //     const sql = "SELECT * FROM tblposts WHERE tblposts.user_id IN (SELECT user_id AS following FROM tblfollowers WHERE follower = ?) ORDER BY RAND()"
-
-                //     db.query(sql, [user_id], (err, result) => {
+                //     db.query("SELECT * FROM tblposts WHERE tblposts.user_id IN (SELECT user_id AS following FROM tblfollowers WHERE follower = ?) ORDER BY RAND()", [user_id], (err, result) => {
                 //         if(err){
                 //             res.json({success: false, message: err})
                 //         } else {

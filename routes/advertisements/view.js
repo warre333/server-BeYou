@@ -1,8 +1,7 @@
 
 
 const express = require("express");
-const sha256 = require("js-sha256");
-var multer = require('multer');
+
 var router = express.Router();
 
 const CheckJWT = require("../../middleware/auth/CheckJWT")

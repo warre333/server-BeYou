@@ -1,15 +1,21 @@
-//  The concept of the Trending Feed Algorithm: 
-// 
-//  - The algortihm returns all the top posts from the couple of the (last) hour(s)/day(s)
-//
-//  - For the algorithm all the posts should have "a score" that's saved in the database
-//      => This score is calculated based on comments, likes, days past after posting  
-//          => Example of the calculation: ranking = (numberOfComments * commentsWeight + numberOfLikes * likesWeight) / (daysSincePost * gravity)
-//          => In the above example the commentsWeight could be something like 2, likesWeight: 1, gravity: 0.2
-//              => This formula will result in that the posts with a lot of interactions are doing better while not many days since the post has been placed 
-//              => If the days since post is high, the score will become lower because of the gravity
-//      => When requested, you get the posts by selecting all posts (that are not seen: underneath more info), DESC on ranking / shuffle them.
-//          => Posts already seen: Save in DB and remove the videos from the table with a lower ranking then xxxxx
+/*  
+    The concept of the Trending Feed Algorithm: 
+
+    The algortihm is a score system that is based on a post's likes, comments and time of posting.
+    It provides a method to find out which posts are doing good, so we boost those posts (because we know people like those posts).
+
+
+    - For the algorithm all the posts should have "a score" that's saved in the database
+        - This score is calculated based on comments, likes, days past after posting  
+            - Calculation: ranking = (numberOfComments * commentsWeight + numberOfLikes * likesWeight) / (daysSincePost * gravity)
+            - Example calculation: 
+                - ranking 1: (10 * 2 + 50 * 1) / (2 * 0.2) => 70 / 0.2 = 175
+                - ranking 2: (10 * 2 + 30 * 1) / (1 * 0.2) => 40 / 0.2 = 200
+                - While ranking 2 has less likes than ranking 1, it still has a higher score, because ranking 1's post has been online for a longer time period.
+                - This formula will result in that the posts with a lot of interactions are doing better, but they will be less boosted if they aren't doing relatively good enough. 
+                - If the days since posting is high, the score will become lower because of the gravity.
+        - When requested, you get the posts by selecting all posts (those that are not seen come first, afterwards just a random selection), DESC on ranking.
+*/
 
 const { COMMENTSWEIGHT, LIKESWEIGHT, DAYSGRAVITY } = require("../../config/algorithm.config")
 const db = require("../../middleware/database/database.connection")

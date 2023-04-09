@@ -1,16 +1,12 @@
 const express = require("express");
-const mysql = require("mysql");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const sha256 = require("js-sha256");
-const jwt = require("jsonwebtoken");
-const nodemailer = require("nodemailer");
 const socketio = require('socket.io');
 const http = require('http');
+const db = require("./middleware/database/database.connection");
 
 const { addUser, getUsersInRoom, getUser, removeUser } = require("./routes/chats/users");
 const { MessageStore } = require("./routes/chats");
-const { WEBSITE_URL } = require("./config/api.config");
 
 // Import the routes
 const auth = "./routes/auth/",
@@ -29,6 +25,7 @@ const server = http.createServer(app, {
 const io = socketio(server, { transports : ['websocket', 'polling', 'flashsocket'] });
 const messageStore = new MessageStore();
 
+// Webhook receiver for Stripe payments
 app.use("/webhooks", require("./routes/advertisements/start/paid"));
 
 app.use(cors())
@@ -41,12 +38,32 @@ app.use(function (req, res, next) {
 });
 
 
-// Authentication
+/*
+
+ 	Authentication
+
+	/auth/			- To check if a user is logged in
+	/auth/login		- Logging in
+	/auth/register	- Creating an account
+
+*/
 app.use("/auth/", require(auth + "index"));
 app.use("/auth/login", require(auth + "login"));
 app.use("/auth/register", require(auth + "register"));
 
-// Posts
+/*
+
+ 	Posts
+
+	/posts/				- GET the posts of a user by id or username
+	/posts/post			- POST/GET/PATCH/DELETE a post
+	/posts/feed			- GET a list of user's friend's posts
+	/posts/trending		- GET popular posts
+	/posts/like			- GET/POST/DELETE liking of posts
+	/posts/comment		- GET/POST/DELETE comments
+	/posts/view			- POST a new view of a post
+	
+*/
 app.use("/posts/", require(posts + "user-posts"));
 app.use("/posts/post", require(posts + "posts"));
 app.use("/posts/feed", require(posts + "feed"));
@@ -55,7 +72,18 @@ app.use("/posts/like", require(posts + "like"));
 app.use("/posts/comment", require(posts + "comments"));
 app.use("/posts/view", require(posts + "view"));
 
-// Users
+/*
+
+ 	Users
+
+	/users/				- GET/DELETE user
+	/users/likes		- GET likes from user
+	/users/profile		- GET/PATCH profile
+	/users/password		- PATCH new password
+	/users/email		- PATCH new email
+	/users/friends		- GET/GET/POST/DELETE friends
+
+*/
 app.use("/users", require(users + "index"));
 app.use("/users/likes", require(users + "likes"));
 app.use("/users/profile", require(users + "profile"));
@@ -63,26 +91,58 @@ app.use("/users/password", require(users + "change-password"));
 app.use("/users/email", require(users + "change-email"));
 app.use("/users/friends", require(users + "friends"));
 
-// Search
+/*
+
+ 	Search
+
+	/search		- GET search for users
+
+*/
 app.use("/search", require(search + "searchbar"));
 
-// Chat
+/*
+
+ 	Chat
+
+	/chat			- POST create new chat
+	/chat/all		- GET chats
+
+*/
 app.use("/chat", require(chat + "create"));
 app.use("/chat/all", require(chat + "get-chats"));
 
-// Advertisements
+/*
+
+ 	Advertisements
+
+	/advertisements/			- POST start a payment process for an advertisement
+	/advertisements/			- GET the ads from a user
+	/advertisements/active		- GET all the active ads
+	/advertisements/view		- POST a new view for an ad
+
+*/
 app.use("/advertisements", require(ads + "start/create-payment"));
 app.use("/advertisements", require(ads + "from-user"));
 app.use("/advertisements/active", require(ads + "active"));
 app.use("/advertisements/view", require(ads + "view"));
 
-// Admin
+/*
+
+ 	Admin
+
+	/admin/					- GET check if an admin is logged in
+	/admin/analytics		- GET the analytics for the dashboard
+	/admin/users			- DELETE an user
+	/admin/posts			- GET all users
+	/admin/posts			- DELETE a post
+	/admin/posts/search		- GET search posts from a user
+*/
 app.use("/admin/", require(admin + "index"));
 app.use("/admin/analytics", require(admin + "analytics"));
 app.use("/admin/users", require(admin + "users/remove"));
 app.use("/admin/posts", require(admin + "posts/get-all"));
-app.use("/admin/posts/search", require(admin + "posts/get"));
 app.use("/admin/posts", require(admin + "posts/remove"));
+app.use("/admin/posts/search", require(admin + "posts/get"));
 
 
 const findMessagesForChat = (chatroom) => {
@@ -143,9 +203,12 @@ io.on('connect', (socket) => {
 	})
 });
  
-// Algorithms
+/*
+
+ 	Algorithms
+
+*/
 const trending_algorithm = require("./services/trending_algorithm/index");
-const db = require("./middleware/database/database.connection");
 
 
 

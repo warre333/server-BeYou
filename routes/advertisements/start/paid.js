@@ -1,17 +1,4 @@
-// The webhook receiver
-// Save in DB
-
-// const app = require('express')();
-// const stripe = require('stripe')('sk_test_51MbMPvBVdpaK1AsGqefv3y85wiNmEH4cq8ZAxok8b4Q2HvAmFHbVaQzyhx9GlvBtdhcBcl0rZ9WIcvd3uAzA3Q5h00hy2bpsvI');
-// const bodyParser = require('body-parser');
-
-// app.post('/webhook', bodyParser.raw({type: 'application/json'}), (request, response) => {
-//   const payload = request.body;
-
-//   console.log("Got payload: " + payload);
-
-//   response.status(200).end();
-// });
+// Stripe webhook receiver
 
 const express = require("express");
 const { STRIPE } = require('../../../config/api.config');
@@ -38,7 +25,6 @@ router.post('', express.raw({type: 'application/json'}), (req, res) => {
 
     switch (event.type) {
       case 'payment_intent.succeeded':
-        console.log(obj);
         db.query("UPDATE tbladvertisements SET status = 'active' WHERE stripe_id = ?", [obj.id], (err, result) => {
           if(err){
             console.log(err)

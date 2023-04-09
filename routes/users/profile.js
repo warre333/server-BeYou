@@ -1,20 +1,12 @@
 
 const express = require("express");
-const mysql = require("mysql");
-const bodyParser = require("body-parser");
-const cors = require("cors");
 const sha256 = require("js-sha256");
-const jwt = require("jsonwebtoken");
-const nodemailer = require("nodemailer");
 var multer = require('multer');
 
 var router = express.Router();
 
 const CheckJWT = require("../../middleware/auth/CheckJWT")
-const isAdmin = require("../../middleware/auth/IsAdmin")
 const db = require("../../middleware/database/database.connection");
-const verifyJWT = require("../../middleware/auth/CheckJWT");
-const authConfig = require("../../config/auth.config");
 
 // Uploading images to backend
 // Define storage + filenames
@@ -50,36 +42,27 @@ const upload = multer({
 router.get("/", (req, res) => {
     const username = req.query.username
 
-    if(username){
-        const sql = "SELECT user_id, username, bio, profile_image, verified FROM tblusers WHERE username = ?"
-        
-        db.query(sql, [username], (err, user_info) => {
+    if(username){        
+        db.query("SELECT user_id, username, bio, profile_image, verified FROM tblusers WHERE username = ?", [username], (err, user_info) => {
             if(err){
                 res.json({success: false, message: "User was not found."})
             } else {
                 if(user_info.length > 0){
                     const userInfo = user_info[0]
-                    const sql = "SELECT * FROM tblposts WHERE user_id = ? ORDER BY post_id DESC"
 
-                    db.query(sql, [userInfo.user_id], (err, posts) => {
+                    db.query("SELECT * FROM tblposts WHERE user_id = ? ORDER BY post_id DESC", [userInfo.user_id], (err, posts) => {
                         if(err){
                             res.json({success: false, message: err})
                         } else {
-                            const sql = "SELECT count(*) AS totalFollowers FROM tblfollowers WHERE user_id = ?"
-
-                            db.query(sql, [userInfo.user_id], (err, followers) => {
+                            db.query("SELECT count(*) AS totalFollowers FROM tblfollowers WHERE user_id = ?", [userInfo.user_id], (err, followers) => {
                                 if(err){
                                     res.json({success: false, message: err})
                                 } else {
-                                    const sql = "SELECT count(*) AS totalPosts FROM tblposts WHERE user_id = ?"
-
-                                    db.query(sql, [userInfo.user_id], (err, total_posts) => {
+                                    db.query("SELECT count(*) AS totalPosts FROM tblposts WHERE user_id = ?", [userInfo.user_id], (err, total_posts) => {
                                         if(err){
                                             res.json({success: false, message: err})
-                                        } else {                                    
-                                            const sql = "SELECT count(*) AS totalLikes FROM tbllikes LEFT JOIN tblposts ON (tblposts.post_id = tbllikes.post_id)  WHERE tblposts.user_id = ?"
-
-                                            db.query(sql, [userInfo.user_id], (err, likes) => {
+                                        } else { 
+                                            db.query("SELECT count(*) AS totalLikes FROM tbllikes LEFT JOIN tblposts ON (tblposts.post_id = tbllikes.post_id)  WHERE tblposts.user_id = ?", [userInfo.user_id], (err, likes) => {
                                                 if(err){
                                                     res.json({success: false, message: err})
                                                 } else {

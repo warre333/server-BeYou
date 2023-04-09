@@ -11,10 +11,10 @@ router.delete("/", isAdmin, (req, res) => {
         if(err){
             res.json({success: false, message: err})
         } else {            
-            // db.query("DELETE FROM tbladvertisements WHERE user_id = ?", [user_id], (err, result) => {
-            //     if(err){
-            //         res.json({success: false, message: err})
-            //     } else {            
+            db.query("DELETE FROM tbladvertisements A LEFT JOIN tblposts P ON (A.post_id = P.post_id) WHERE P.user_id = ?", [user_id], (err, result) => {
+                if(err){
+                    res.json({success: false, message: err})
+                } else {            
                     db.query("DELETE FROM tblcomments WHERE user_id = ?", [user_id], (err, result) => {
                         if(err){
                             res.json({success: false, message: err})
@@ -28,8 +28,8 @@ router.delete("/", isAdmin, (req, res) => {
                             })
                         }
                     })
-            //     }
-            // })
+                }
+            })
         }
     })
 })

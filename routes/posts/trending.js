@@ -1,5 +1,3 @@
-
-
 const express = require("express");
 const jwt = require("jsonwebtoken");
 
@@ -7,7 +5,6 @@ var router = express.Router();
 
 const db = require("../../middleware/database/database.connection");
 const { JWTSECRET } = require("../../config/auth.config");
-
 
 // Get posts to show (trending)
 router.get("/", (req,res) => {
@@ -25,9 +22,7 @@ router.get("/", (req,res) => {
     if(user_id !== ""){
         // Explanation query: select all posts where post_id's are the same and where the user_id is not found (= not seen)
         // Add Limit
-        const sql = "SELECT P.*, (SELECT COUNT(V.post_id) FROM tblviewed V WHERE V.post_id = P.post_id) AS views, (SELECT COUNT(L.post_id) FROM tbllikes L WHERE L.post_id = P.post_id) AS likes FROM tblposts P WHERE NOT EXISTS (SELECT * FROM tblviewed V WHERE V.user_id = ? AND V.post_id = P.post_id) ORDER BY P.ranking DESC"
-
-        db.query(sql, [user_id], (err, result) => {
+        db.query("SELECT P.*, (SELECT COUNT(V.post_id) FROM tblviewed V WHERE V.post_id = P.post_id) AS views, (SELECT COUNT(L.post_id) FROM tbllikes L WHERE L.post_id = P.post_id) AS likes FROM tblposts P WHERE NOT EXISTS (SELECT * FROM tblviewed V WHERE V.user_id = ? AND V.post_id = P.post_id) ORDER BY P.ranking DESC", [user_id], (err, result) => {
             if(err){
                 res.json({success: false, message: err})
             } else {
@@ -35,9 +30,7 @@ router.get("/", (req,res) => {
                 if(result.length > 5){    
                     res.json({success: true, data: result, up_to_date: false})
                 } else {                    
-                    const sql = "SELECT P.*, (SELECT COUNT(V.post_id) FROM tblviewed V WHERE V.post_id = P.post_id) AS views, (SELECT COUNT(L.post_id) FROM tbllikes L WHERE L.post_id = P.post_id) AS likes FROM tblposts P ORDER BY P.ranking DESC"
-
-                    db.query(sql, [user_id], (err, result) => {
+                    db.query("SELECT P.*, (SELECT COUNT(V.post_id) FROM tblviewed V WHERE V.post_id = P.post_id) AS views, (SELECT COUNT(L.post_id) FROM tbllikes L WHERE L.post_id = P.post_id) AS likes FROM tblposts P ORDER BY P.ranking DESC", [user_id], (err, result) => {
                         if(err){
                             res.json({success: false, message: err})
                         } else {
@@ -63,9 +56,7 @@ router.get("/", (req,res) => {
                                         ad++
                                     }
                     
-                                    console.log(posts)
-                                    res.json({success: true, data: posts, up_to_date: true})
-                    
+                                    res.json({success: true, data: posts, up_to_date: true})                    
                                 }
                             })
                         }
@@ -76,9 +67,7 @@ router.get("/", (req,res) => {
     } else {
         // Explanation query: select all posts with the highest rankings, not saving if viewed because user is not logged in YET
         // Add Limit
-        const sql = "SELECT * FROM tblposts ORDER BY ranking DESC"
-
-        db.query(sql, [user_id], (err, result) => {
+        db.query("SELECT * FROM tblposts ORDER BY ranking DESC", [user_id], (err, result) => {
             if(err){
                 res.json({success: false, message: err})
             } else {

@@ -34,7 +34,43 @@ router.delete("/", CheckJWT, (req, res) => {
         if(err) {
             res.json({success: false, message: err})
         } else {
-            res.json({success: true, message: "The user has been deleted successfully."})
+            db.query("DELETE FROM tbladvertisements WHERE (SELECT post_id FROM tblposts WHERE user_id = ?)", [req.user_id], (err, result) => {
+                if(err) {
+                    res.json({success: false, message: err})
+                } else {
+                    db.query("DELETE FROM tblposts WHERE user_id = ?", [req.user_id], (err, result) => {
+                        if(err) {
+                            res.json({success: false, message: err})
+                        } else {
+                            db.query("DELETE FROM tblchatmembers WHERE user_id = ?", [req.user_id], (err, result) => {
+                                if(err) {
+                                    res.json({success: false, message: err})
+                                } else {
+                                    db.query("DELETE FROM tblchatrooms WHERE user_id = ?", [req.user_id], (err, result) => {
+                                        if(err) {
+                                            res.json({success: false, message: err})
+                                        } else {
+                                            db.query("DELETE FROM tblcomments WHERE user_id = ?", [req.user_id], (err, result) => {
+                                                if(err) {
+                                                    res.json({success: false, message: err})
+                                                } else {
+                                                    db.query("DELETE FROM tblfollowers WHERE user_id = ? OR follower = ?", [req.user_id, req.user_id], (err, result) => {
+                                                        if(err) {
+                                                            res.json({success: false, message: err})
+                                                        } else {
+                                                            res.json({success: true, message: "The user has been deleted successfully."})
+                                                        }
+                                                    })
+                                                }
+                                            })
+                                        }
+                                    })
+                                }
+                            })
+                        }
+                    })
+                }
+            })
         }
     })
 })

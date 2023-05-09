@@ -63,6 +63,7 @@ router.get("/", CheckJWT, (req,res) => {
                                         posts.splice(pos, 0, result_ads[ad])
                                         pos += interval
                                         ad++
+                                        console.log(result_ads);
                                     }
                     
                                     res.json({success: true, data: posts, up_to_date: true})        

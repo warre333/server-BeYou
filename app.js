@@ -215,6 +215,6 @@ const trending_algorithm = require("./services/trending_algorithm/index");
 
 
 // Start server
-server.listen(4000, '192.168.0.138', () => {
+server.listen(4000, '10.43.36.26', () => {
  	console.log("API has been started on port 4000!");
 })

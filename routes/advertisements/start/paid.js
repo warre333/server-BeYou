@@ -24,6 +24,8 @@ router.post("", express.raw({ type: "application/json" }), (req, res) => {
 
   const obj = event.data.object;
 
+  console.log(obj);
+
   switch (event.type) {
     case "payment_intent.succeeded":
       db.query(

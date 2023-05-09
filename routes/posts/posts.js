@@ -61,9 +61,9 @@ router.get("/", (req, res) => {
 })
 
 //  -> Post
-router.post("/",  verifyJWT,  upload.single('postImage'), (req, res) => {
+router.post("/",  verifyJWT, upload.single('postImage'), (req, res) => {
     const user_id = req.user_id
-    const media_link = req.file.filename
+    const media_link = req.file?.filename
     const caption = req.body.caption
 
     if(media_link){

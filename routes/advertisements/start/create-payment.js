@@ -9,6 +9,10 @@ router.post("/", async(req, res) => {
   const { post_id, budget } = req.body
 
   if(post_id, budget){  
+    if(budget > 10000){
+      res.json({success: false, message: "You can not spend more than €10.000 on an advertisement."})
+      return
+    }
     const paymentIntent = await stripe.paymentIntents.create({
       amount: budget * 100,
       currency: 'usd',

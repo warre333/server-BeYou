@@ -125,10 +125,18 @@ router.delete("/", verifyJWT, (req, res) => {
                         if(err){
                             res.json({success: false, message: err})
                         } else {
-                            res.json({success: true,  message: "Post has been deleted successfully."})
+                            db.query("UPDATE tbladvertisements SET status='ended' WHERE post_id = ?", [post_id, user_id], (err, result) => {
+                                if(err){
+                                    res.json({success: false, message: err})
+                                } else {
+                                    res.json({success: true,  message: "Post has been deleted successfully."})
+                                }
+                            }) 
                         }
                     }) 
-                }                
+                } else {
+                    res.json({success: false, message: "You are not the owner of this post."})
+                }               
             }
         })
     } else {

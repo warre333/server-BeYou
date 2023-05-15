@@ -24,7 +24,13 @@ router.delete("/", isAdmin, (req, res) => {
                                 if(err){
                                     res.json({success: false, message: err})
                                 } else {              
-                                    res.json({success: true, message: "The post has been deleted."})
+                                    db.query("UPDATE tbladvertisements SET status='ended' WHERE post_id = ?", [post_id], (err, result) => {
+                                        if(err){
+                                            res.json({success: false, message: err})
+                                        } else {              
+                                            res.json({success: true, message: "The post has been deleted."})
+                                        }
+                                    })
                                 }
                             })
                         }

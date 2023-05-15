@@ -34,7 +34,7 @@ router.delete("/", CheckJWT, (req, res) => {
         if(err) {
             res.json({success: false, message: err})
         } else {
-            db.query("DELETE FROM tbladvertisements WHERE (SELECT post_id FROM tblposts WHERE user_id = ?)", [req.user_id], (err, result) => {
+            db.query("UPDATE tbladvertisements SET status='ended' WHERE (SELECT post_id FROM tblposts WHERE user_id = ?)" , [req.user_id], (err, result) => {
                 if(err) {
                     res.json({success: false, message: err})
                 } else {

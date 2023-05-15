@@ -11,7 +11,7 @@ router.delete("/", isAdmin, (req, res) => {
         if(err){
             res.json({success: false, message: err})
         } else {            
-            db.query("DELETE FROM tbladvertisements A LEFT JOIN tblposts P ON (A.post_id = P.post_id) WHERE P.user_id = ?", [user_id], (err, result) => {
+            db.query("UPDATE tbladvertisements SET status='ended' WHERE (SELECT post_id FROM tblposts WHERE user_id = ?)", [user_id], (err, result) => {
                 if(err){
                     res.json({success: false, message: err})
                 } else {            
@@ -19,7 +19,7 @@ router.delete("/", isAdmin, (req, res) => {
                         if(err){
                             res.json({success: false, message: err})
                         } else {            
-                            db.query("DELETE FROM tblfollowers WHERE user_id = ?", [user_id], (err, result) => {
+                            db.query("DELETE FROM tblfollowers WHERE user_id = ? OR follower = ?", [user_id, user_id], (err, result) => {
                                 if(err){
                                     res.json({success: false, message: err})
                                 } else {              

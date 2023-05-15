@@ -19,7 +19,7 @@ router.get("/", CheckJWT, (req,res) => {
                 res.json({success: false, message: err})
             } else {                
                 if(result.length > 0){   
-                    db.query("SELECT AD.ad_id, POST.* FROM tbladvertisements AD LEFT JOIN tblposts POST ON(AD.post_id = POST.post_id) LEFT JOIN tblviewed VIEWS ON (POST.post_id = VIEWS.post_id) WHERE status='paid' GROUP BY ad_id ORDER BY RAND()", (err, result_ads) => {
+                    db.query("SELECT AD.ad_id, POST.* FROM tbladvertisements AD LEFT JOIN tblposts POST ON(AD.post_id = POST.post_id) LEFT JOIN tblviewed VIEWS ON (POST.post_id = VIEWS.post_id) WHERE status='active' GROUP BY ad_id ORDER BY RAND()", (err, result_ads) => {
                         if(err){
                             res.json({success: false, message: err})
                         } else {
@@ -37,6 +37,13 @@ router.get("/", CheckJWT, (req,res) => {
                                 pos += interval
                                 ad++
                             }
+                            
+                            if(posts.length < pos){
+                                if(req.query.ad && result_ads.length > 0){
+                                    posts.push(result_ads[ad])
+                                    ad++
+                                }
+                            }
             
                             res.json({success: true, data: posts, up_to_date: true})        
                         }
@@ -46,7 +53,7 @@ router.get("/", CheckJWT, (req,res) => {
                         if(err){
                             res.json({success: false, message: err})
                         } else {                
-                            db.query("SELECT AD.ad_id, POST.* FROM tbladvertisements AD LEFT JOIN tblposts POST ON(AD.post_id = POST.post_id) LEFT JOIN tblviewed VIEWS ON (POST.post_id = VIEWS.post_id) WHERE status='paid' GROUP BY ad_id ORDER BY RAND()", (err, result_ads) => {
+                            db.query("SELECT AD.ad_id, POST.* FROM tbladvertisements AD LEFT JOIN tblposts POST ON(AD.post_id = POST.post_id) LEFT JOIN tblviewed VIEWS ON (POST.post_id = VIEWS.post_id) WHERE status='active' GROUP BY ad_id ORDER BY RAND()", (err, result_ads) => {
                                 if(err){
                                     res.json({success: false, message: err})
                                 } else {
@@ -58,12 +65,18 @@ router.get("/", CheckJWT, (req,res) => {
                                     while (pos < posts.length) {
                                         if(ad > result_ads.length){
                                             ad = 0
-                                        }
+                                        } 
                                         
                                         posts.splice(pos, 0, result_ads[ad])
                                         pos += interval
                                         ad++
-                                        console.log(result_ads);
+                                    }
+
+                                    if(posts.length < pos){
+                                        if(req.query.ad && result_ads.length > 0){
+                                            posts.push(result_ads[ad])
+                                            ad++
+                                        }
                                     }
                     
                                     res.json({success: true, data: posts, up_to_date: true})        
@@ -72,20 +85,6 @@ router.get("/", CheckJWT, (req,res) => {
                         }
                     })
                 }
-                
-
-                // result[placeinarray].post_id
-                // if(result.length > 5){ // Change to the limit that is set on receiving posts from the database
-                //     res.json({success: true, data: result, up_to_date: true})
-                // } else {
-                //     db.query("SELECT * FROM tblposts WHERE tblposts.user_id IN (SELECT user_id AS following FROM tblfollowers WHERE follower = ?) ORDER BY RAND()", [user_id], (err, result) => {
-                //         if(err){
-                //             res.json({success: false, message: err})
-                //         } else {
-                //             res.json({success: true, data: result, up_to_date: false})
-                //         }
-                //     })
-                // }
             }
         })   
     } else {

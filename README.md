@@ -26,4 +26,19 @@ My idea for the website is that you can share memorable moments, and to communic
 
 ## How is it made
 
-The website was made in ReactJS with TailwindCSS, the website uses a selfmade API that is made in NodeJS with an Express server (github link: https://github.com/warre333/server-Speakr).
+The website was made in ReactJS with TailwindCSS (github link: https://github.com/warre333/client-Speakr), the website uses a selfmade API that is made in NodeJS with an Express server.
+
+
+## Installation
+
+Clone the repository
+``` git clone https://github.com/warre333/server-Speakr ```
+
+Install packages
+``` npm install ```
+
+Connect Stripe or start Stripe locally
+``` npm run webhooks ```
+
+Start website
+``` npm run start ```

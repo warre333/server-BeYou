@@ -194,8 +194,8 @@ function startExpress() {
 					if(err){
 						console.log(err);
 					} else {
-						db.query("SELECT tblchatrooms.*, tblusers.username, tblusers.profile_image FROM tblchatrooms, tblusers, tblchatmembers Member1, tblchatmembers Member2 WHERE tblusers.user_id = Member1.user_id AND Member1.chatroom_id = tblchatrooms.chatroom_id AND tblchatrooms.chatroom_id = Member2.chatroom_id AND Member2.user_id = ? AND Member1.user_id != ? AND tblchatrooms.chatroom_id = ? GROUP BY tblchatrooms.chatroom_id", [user_id, user_id, chatroom], async(err, result) => {
-							if(result.length > 0){
+						db.query("SELECT tblchatrooms.*, tblusers.username, tblusers.profile_image FROM tblchatrooms, tblusers, tblchatmembers Member1, tblchatmembers Member2 WHERE tblusers.user_id = Member1.user_id AND Member1.chatroom_id = tblchatrooms.chatroom_id AND tblchatrooms.chatroom_id = Member2.chatroom_id AND Member2.user_id = ? AND Member1.user_id != ? AND tblchatrooms.chatroom_id = ? GROUP BY tblchatrooms.chatroom_id", [user_id, user_id, chatroom], async(err, resultRoom) => {
+							if(resultRoom.length > 0){
 								const { error, user } = addUser({ id: user_id, name: result[0].username, chatroom });
 			
 								if(error) return callback(error);
@@ -253,7 +253,7 @@ function startExpress() {
 
 
 	// Start server
-	server.listen(4000, '10.43.36.26', () => {
+	server.listen(4000, '192.168.0.138', () => {
 		console.log("API has been started on port 4000!");
 	})
 }

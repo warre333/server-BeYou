@@ -1,6 +1,6 @@
 module.exports = {
-    HOST: "localhost", 
-    USER: "root",
-    PASSWORD: "",
-    DATABASE: "dbGip6IF", 
+    HOST: process.env.HOST, 
+    USER: process.env.USER,
+    PASSWORD: process.env.PASSWORD,
+    DATABASE: process.env.DATABASE, 
 }

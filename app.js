@@ -45,9 +45,7 @@ function startExpress() {
 
 
 	const app = express();
-	const server = http.createServer(app, {
-		origin: '*'
-	});
+	const server = http.createServer(app);
 	const io = socketio(server, { transports : ['websocket', 'polling', 'flashsocket'] });
 	const messageStore = new MessageStore();
 

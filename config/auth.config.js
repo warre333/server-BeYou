@@ -1,3 +1,5 @@
+require('dotenv').config()
+
 module.exports = {
     SALT: process.env.SALT, // Salt being used with hashing the received sensitive information
     JWTSECRET: process.env.JWTSECRET, // The JWT secret to encrypt the tokens

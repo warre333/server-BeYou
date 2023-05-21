@@ -253,7 +253,7 @@ function startExpress() {
 
 
 	// Start server
-	server.listen(4000, '192.168.0.138', () => {
+	server.listen(4000, '127.0.0.1', () => {
 		console.log("API has been started on port 4000!");
 	})
 }

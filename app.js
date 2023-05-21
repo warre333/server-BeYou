@@ -57,7 +57,7 @@ function startExpress() {
 	// Webhook receiver for Stripe payments
 	app.use("/webhooks", require("./routes/advertisements/start/paid"));
 
-	app.use(cors())
+	// app.use(cors())
 	app.use(express.json());
 	app.use(bodyParser.urlencoded({ extended: true }));  
 	app.use('/images', express.static('uploads'))

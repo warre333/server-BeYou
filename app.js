@@ -118,7 +118,7 @@ function startExpress() {
 	app.use("/users/profile", require(users + "profile"));
 	app.use("/users/password", require(users + "change-password"));
 	app.use("/users/email", require(users + "change-email"));
-	app.use("/users/friends", require(users + "friends"));
+	app.use("/users/friends", require(users + "Friends"));
 
 	/*
 

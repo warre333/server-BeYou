@@ -67,7 +67,7 @@ async function changePostRanking(post_id) {
                 comments = result[0].totalComments;
 
                 db.query(
-                  "SELECT count(*) AS totalLikes FROM tblLikes WHERE post_id = ?",
+                  "SELECT count(*) AS totalLikes FROM tbllikes WHERE post_id = ?",
                   [post_id],
                   (err, result) => {
                     if (err) {

@@ -187,6 +187,7 @@ function startExpress() {
 
 	io.on('connect', (socket) => {
 		socket.on('join', ({ user_id, chatroom }, callback) => {
+			console.log(user_id, chatroom);
 			if(user_id && user_id !== "none" && chatroom){
 				db.query("SELECT * FROM tblusers WHERE user_id = ?", [user_id], async(err, result) => {
 					if(err){
@@ -194,6 +195,7 @@ function startExpress() {
 					} else {
 						db.query("SELECT tblchatrooms.*, tblusers.username, tblusers.profile_image FROM tblchatrooms, tblusers, tblchatmembers Member1, tblchatmembers Member2 WHERE tblusers.user_id = Member1.user_id AND Member1.chatroom_id = tblchatrooms.chatroom_id AND tblchatrooms.chatroom_id = Member2.chatroom_id AND Member2.user_id = ? AND Member1.user_id != ? AND tblchatrooms.chatroom_id = ? GROUP BY tblchatrooms.chatroom_id", [user_id, user_id, chatroom], async(err, resultRoom) => {
 							if(resultRoom.length > 0){
+								console.log(resultRoom);		
 								const { error, user } = addUser({ id: user_id, name: result[0].username, chatroom });
 			
 								if(error) return callback(error);
@@ -205,7 +207,8 @@ function startExpress() {
 								io.to(user.chatroom).emit('roomData', { chatroom: user.chatroom, users: getUsersInRoom(user.chatroom), messages: messages });
 							
 								callback();
-							} else {							
+							} else {
+								console.log(resultRoom);							
 								return callback({success: false, message: "Error: not in room"});
 							}
 						})					

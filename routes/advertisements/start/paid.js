@@ -10,8 +10,7 @@ var router = express.Router();
 
 router.post("", express.raw({ type: "application/json" }), (req, res) => {
   let event;
-  const endpointSecret =
-    "whsec_f0e36a64d3d85a2b865a68af3a02116159da99c919609d8ae429a7c02eeb5856"; // Given when doing npm run webhhooks
+  const endpointSecret = "we_1NEYAtBVdpaK1AsGNdMIcvck"; // Given when doing npm run webhhooks
   const sig = req.headers["stripe-signature"];
 
   try {

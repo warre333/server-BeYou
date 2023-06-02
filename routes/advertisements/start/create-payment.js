@@ -1,7 +1,7 @@
 const express = require("express");
 const db = require("../../../middleware/database/database.connection");
 
-const stripe = require('stripe')('sk_test_51MbMPvBVdpaK1AsGqefv3y85wiNmEH4cq8ZAxok8b4Q2HvAmFHbVaQzyhx9GlvBtdhcBcl0rZ9WIcvd3uAzA3Q5h00hy2bpsvI');
+const stripe = require('stripe')('pk_test_51MbMPvBVdpaK1AsGhgl5HaCkeHIC7x8gQzc9ODQ1BboTArVxGzCRcMmmzxU17xvut3PiybGcMdkZqYWgmbaUBHcP00mSnEIYgc');
 
 var router = express.Router();
 

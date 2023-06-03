@@ -1,7 +1,7 @@
 // Stripe webhook receiver
 
 const express = require("express");
-const { STRIPE } = require("../../../config/api.config");
+const { STRIPE, STRIPE_SIGNATURE } = require("../../../config/api.config");
 const db = require("../../../middleware/database/database.connection");
 const stripe = require("stripe")(STRIPE);
 const axios = require("axios");
@@ -10,7 +10,7 @@ var router = express.Router();
 
 router.post("", express.raw({ type: "application/json" }), (req, res) => {
   let event;
-  const endpointSecret = "we_1NEYAtBVdpaK1AsGNdMIcvck"; // Given when doing npm run webhhooks
+  const endpointSecret = STRIPE_SIGNATURE; // Given when doing npm run webhhooks
   const sig = req.headers["stripe-signature"];
 
   try {

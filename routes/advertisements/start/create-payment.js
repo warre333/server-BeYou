@@ -1,7 +1,8 @@
 const express = require("express");
 const db = require("../../../middleware/database/database.connection");
+const { STRIPE } = require("../../../config/api.config");
 
-const stripe = require('stripe')('pk_test_51MbMPvBVdpaK1AsGhgl5HaCkeHIC7x8gQzc9ODQ1BboTArVxGzCRcMmmzxU17xvut3PiybGcMdkZqYWgmbaUBHcP00mSnEIYgc');
+const stripe = require('stripe')(STRIPE);
 
 var router = express.Router();
 

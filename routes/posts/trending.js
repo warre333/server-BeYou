@@ -33,7 +33,7 @@ router.get("/", (req, res) => {
           if (result.length > 0) {
             // There are possible more posts available
             db.query(
-              "SELECT AD.ad_id, POST.* FROM tbladvertisements AD LEFT JOIN tblposts POST ON(AD.post_id = POST.post_id) LEFT JOIN tblviewed VIEWS ON (POST.post_id = VIEWS.post_id) WHERE status='active' GROUP BY ad_id ORDER BY RAND()",
+              "SELECT AD.ad_id, POST.* FROM tbladvertisements AD LEFT JOIN tblposts POST ON(AD.post_id = POST.post_id) LEFT JOIN tblviewed VIEWS ON (POST.post_id = VIEWS.post_id) WHERE status='active' GROUP BY ad_id ORDER BY P.ranking DESC",
               (err, result_ads) => {
                 if (err) {
                   res.json({ success: false, message: err });
